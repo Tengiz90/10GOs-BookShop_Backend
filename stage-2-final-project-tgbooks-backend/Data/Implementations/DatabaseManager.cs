@@ -1,0 +1,247 @@
+﻿using Microsoft.EntityFrameworkCore;
+using stage_2_final_project_tgbooks_backend.Core.Exceptions;
+using stage_2_final_project_tgbooks_backend.Data;
+using stage_2_final_project_tgbooks_backend.Data.Interfaces;
+using stage_2_final_project_tgbooks_backend.Data.Models;
+using stage_2_final_project_tgbooks_backend.Requests.Models.Users;
+
+namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsyncta.Implementations
+{
+
+    public class DatabaseManager : IDatabaseManager
+    {
+        private readonly DatabaseContext _db;
+        public DatabaseManager(DatabaseContext db)
+        {
+            _db = db;
+        }
+
+        // ------------------ Books ------------------
+        public async Task<int> AddNewBookAsync(Book book)
+        {
+
+            _db.Books.Add(book);
+            await _db.SaveChangesAsync();
+            return book.Id;
+
+
+        }
+
+        public async Task<int> EditBookByIdAsync(Book updatedBook)
+        {
+            var foundBook = await _db.Books
+                .Include(b => b.Categories)
+                .FirstOrDefaultAsync(b => b.Id == updatedBook.Id);
+
+            if (foundBook == null)
+                throw new EntityNotFoundException(nameof(Book), updatedBook.Id);
+
+            foundBook.Title = updatedBook.Title;
+            foundBook.Author = updatedBook.Author;
+            if (updatedBook.Quantity < 0) throw new ArgumentOutOfRangeException(nameof(updatedBook.Quantity), "Book quantity can't be negative");
+            foundBook.Quantity = updatedBook.Quantity;
+
+            foundBook.Categories.Clear();
+            foreach (var category in updatedBook.Categories)
+            {
+                var trackedCategory = await _db.Categories.FindAsync(category.Id);
+                if (trackedCategory != null)
+                    foundBook.Categories.Add(trackedCategory);
+            }
+
+                await _db.SaveChangesAsync();
+                return updatedBook.Id;
+           
+        }
+
+        public async Task<Book> GetBookByIdAsync(int id)
+        {
+            var book = await _db.Books
+                .Include(b => b.Categories)
+                .FirstOrDefaultAsync(b => b.Id == id);
+            if (book == null)
+            {
+                throw new EntityNotFoundException(nameof(Book), id);
+            }
+            return  book;
+           
+            
+        }
+
+        public async Task<ICollection<Book>> GetBooksByCategoryIdAsync(int id)
+        {
+            return await _db.Books
+                            .Where(b => b.Categories.Any(c => c.Id == id))
+                            .ToListAsync();
+        }
+
+        public async Task<ICollection<Book>> GetBooksByCategoryIdSortedByTitleAsync(int categoryId)
+        {
+            return await _db.Books
+                .Where(b => b.Categories.Any(c => c.Id == categoryId))
+                .OrderBy(b => b.Title)
+                .ToListAsync();
+        }
+        public async Task<ICollection<Book>> GetAllBooksAsync()
+        {
+            return await _db.Books.ToListAsync();
+        }
+
+        public async Task<ICollection<Book>> GetBooksPageAsync(int pageNumber, int pageSize)
+        {
+            return await _db.Books
+                .OrderBy(b => b.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public IQueryable<Category> GetCategories()
+        {
+            return _db.Categories;
+        }
+
+        public async Task<int> RemoveBookByIdAsync(int id)
+        {
+            var book = await _db.Books.FindAsync(id);
+            if (book == null)
+                throw new EntityNotFoundException(nameof(Book), id);
+
+            _db.Books.Remove(book);
+            await _db.SaveChangesAsync();
+            return book.Id;
+        }
+
+        // ------------------ Users ------------------
+        public async Task<int> AddUserAsync(User user)
+        {
+            _db.Users.Add(user);
+            await _db.SaveChangesAsync();
+            return user.Id;
+        }
+
+
+        public async Task<User> EditUserFullNameByIdAsync(string firstName, string lastName, int id)
+        {
+            var dbUser = await _db.Users.FindAsync(id);
+            if (dbUser == null)
+                throw new EntityNotFoundException(nameof(User), id);
+
+            dbUser.FirstName = firstName;
+            dbUser.LastName = lastName;
+
+            await _db.SaveChangesAsync();
+            return dbUser;
+        }
+
+        public async Task<bool> DoesUserWithSuchEmailAlreadyExistAsync(string email)
+        {
+            return await _db.Users.AnyAsync(u => u.Email == email && u.IsVerified == true);
+        }
+
+        public async Task<User> GetUserByEmailAsync(string email)
+        {
+            var user =  await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null) throw new EntityNotFoundException(nameof(User), email);
+
+            else return user;
+        }
+
+        public async Task<User> GetUserByEmailAndPasswordAsync(string email, string password)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null) throw new EntityNotFoundException(nameof(User), email);
+
+            // Use BCrypt to verify password
+            if (BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+                return user;
+
+            throw new AuthenticationException("Invalid email or password.");
+        }
+
+        public async Task<int> RemoveUserByIdAsync(int id)
+        {
+            var user = await _db.Users.FindAsync(id);
+            if (user == null) throw new EntityNotFoundException(nameof(User), id);
+
+            _db.Users.Remove(user);
+            await _db.SaveChangesAsync();
+            return user.Id;
+        }
+
+        public async Task<int> ConfirmUserRegistrationAsync(string email, string code)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null) throw new EntityNotFoundException(nameof(User), email);
+
+            if (user.EmailVerificationCode == code)
+            {
+                user.IsVerified = true;
+                user.EmailVerificationCode = null; // clear code after verification
+                await _db.SaveChangesAsync();
+                return user.Id;
+            }
+
+            throw new EmailConfirmationException("Entered code was incorrect");
+        }
+
+        public async Task<bool> IsUserWithSuchEmailAlreadyVerifiedAsync(string email)
+        {
+            var isVerified = await _db.Users
+                .AsNoTracking()
+                .Where(u => u.Email == email)
+                .Select(u => (bool)u.IsVerified)
+                .FirstOrDefaultAsync();
+
+     
+            return isVerified;
+        }
+        public async Task<Order> PurchaseBooksByIdsAsync(ICollection<int> bookIds, ICollection<int> quantitiesToPurchaseEach, int userId)
+        {
+            if (bookIds.Count != quantitiesToPurchaseEach.Count)
+                throw new ArgumentException("Book IDs and quantities must match.");
+
+            if (!bookIds.Any())
+                throw new ArgumentException("No books selected.");
+
+            var orderItems = new List<OrderItem>();
+            // Loop through each book and attempt purchase
+            for (int i = 0; i < bookIds.Count; i++)
+            {
+                int bookId = bookIds.ElementAt(i);
+                int qtyToPurchase = quantitiesToPurchaseEach.ElementAt(i);
+
+                if (qtyToPurchase <= 0)
+                    throw new ArgumentOutOfRangeException("You can't purchase Negative or Zero amount"); // invalid quantity
+
+                // Find the book by primary key
+                var book = await _db.Books.FindAsync(bookId);
+                if (book == null)
+                    throw new EntityNotFoundException(nameof(Book), bookId);
+
+                if (book.Quantity < qtyToPurchase)
+                    throw new NotEnoughStockException(
+                          book.Title,
+                          book.Language.ToString(),
+                          book.Quantity,
+                          book.Quantity == 0 // true if out of stock
+                      );
+                // Decrement the stock
+                book.Quantity -= qtyToPurchase;
+
+
+                var orderItem = new OrderItem { BookId = bookId, Quantity = qtyToPurchase };
+                orderItems.Add(orderItem);
+            }
+
+            var order = new Order { CreatedAt = DateTime.Now, Items = orderItems, UserId = userId };
+            _db.Orders.Add(order);
+            // Persist both stock updates and the new order
+            await _db.SaveChangesAsync();
+            return order;
+       
+        }
+
+ 
+    }
+}

@@ -1,0 +1,6 @@
+@stage_2_final_project_tgbooks_backend_HostAddress = http://localhost:5007
+
+GET {{stage_2_final_project_tgbooks_backend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
