@@ -3,9 +3,8 @@
 using stage_2_final_project_tgbooks_backend.Data.Interfaces;
 using stage_2_final_project_tgbooks_backend.Data.Models;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Authors;
-using stage_2_final_project_tgbooks_backend.Requests.Models.Books;
-using stage_2_final_project_tgbooks_backend.Requests.Models.Users;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Books;
+using stage_2_final_project_tgbooks_backend.Services.AdditionalModels;
 using WebApplication2.Services.Interfaces;
 
 namespace WebApplication2.Services
@@ -19,7 +18,7 @@ namespace WebApplication2.Services
             _databaseManager = databaseManager;
         }
 
-        public async Task<AddBookResult> AddNewBookAsync(AddNewBook request)
+        public async Task<AddBookResult> AddNewBookAsync(AddBookDto request)
         {
             var authors = new List<Author>();
             foreach (var authorName in request.AuthorNames)
@@ -40,7 +39,7 @@ namespace WebApplication2.Services
                 Authors = authors,
                 Language = request.Language,
                 Quantity = request.Quantity,
-                ImageURL = request.ImageURL,
+                ImageURL = request.ImageUrl,
                 Categories = _databaseManager.GetCategories()
                           .Where(c => request.CategoryIds.Contains(c.Id)).ToList()
             };
@@ -51,7 +50,7 @@ namespace WebApplication2.Services
             };
         }
 
-        public async Task<EditBookResult> EditBookAsync(EditBook request)
+        public async Task<EditBookResult> EditBookAsync(EditBookDto request)
         {
             // Map author names to Author entities
             var authors = new List<Author>();

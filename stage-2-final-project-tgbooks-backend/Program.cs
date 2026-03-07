@@ -32,6 +32,7 @@ namespace stage_2_final_project_tgbooks_backend
             builder.Services.AddScoped<IBookService, BookService>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IAuthorService, AuthorService>();
+            builder.Services.AddSingleton<IStorageService, BlobService>();
             builder.Services.AddSingleton<IEmailSender, EmailSender>();
 
             // register all validators in the assembly

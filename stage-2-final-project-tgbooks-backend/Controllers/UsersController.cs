@@ -1,15 +1,10 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using stage_2_final_project_tgbooks_backend.Core.Exceptions;
-using stage_2_final_project_tgbooks_backend.Data.Models;
-using stage_2_final_project_tgbooks_backend.Requests.Models.Books;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Users;
 using stage_2_final_project_tgbooks_backend.Responses;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Users;
 using stage_2_final_project_tgbooks_backend.Services.Interfaces;
-using stage_2_final_project_tgbooks_backend.Validators.books;
-using stage_2_final_project_tgbooks_backend.Validators.users;
-using WebApplication2.Services.Interfaces;
 
 namespace stage_2_final_project_tgbooks_backend.Controllers
 {

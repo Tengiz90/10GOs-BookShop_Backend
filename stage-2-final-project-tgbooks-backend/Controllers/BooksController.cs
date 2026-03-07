@@ -1,9 +1,13 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using stage_2_final_project_tgbooks_backend.Core.Exceptions;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Books;
 using stage_2_final_project_tgbooks_backend.Responses;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Books;
+using stage_2_final_project_tgbooks_backend.Services;
+using stage_2_final_project_tgbooks_backend.Services.AdditionalModels;
+using stage_2_final_project_tgbooks_backend.Services.Interfaces;
 using WebApplication2.Services.Interfaces;
 
 namespace stage_2_final_project_tgbooks_backend.Controllers
@@ -15,14 +19,20 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         private readonly IBookService _bookService;
         private readonly IValidator<AddNewBook> _addBookValidator;
         private readonly IValidator<EditBook> _editBookValidator;
+        private readonly IStorageService _storageService;
+
         public BooksController(
             IBookService bookService,
             IValidator<AddNewBook> addBookValidator,
-            IValidator<EditBook> editBookValidator)
+            IValidator<EditBook> editBookValidator,
+            IStorageService storageService
+
+            )
         {
             _bookService = bookService;
             _addBookValidator = addBookValidator;
             _editBookValidator = editBookValidator;
+            _storageService = storageService;
         }
 
         [HttpGet("get-by-category")]
@@ -143,7 +153,22 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
             try
             {
-                var editBookResult = await _bookService.EditBookAsync(book);
+                var imageUrl = book.ImageUrlBefore;
+                if (book.Image != null)
+                {
+                    imageUrl = await _storageService.UploadFileAsync(book.Image);
+                } 
+                    var editiedBook = new EditBookDto
+                    {
+                        AuthorNames = book.AuthorNames,
+                        Title = book.Title,
+                        CategoryIds = book.CategoryIds,
+                        ImageURL = imageUrl,
+                        Language = book.Language,
+                        Quantity = book.Quantity,
+                    };
+
+                var editBookResult = await _bookService.EditBookAsync(editiedBook);
                 var response = new ApiResponse<EditBookResult?>
                 {
                     WasSuccessful = true,
@@ -178,6 +203,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         [HttpPost("Add")]
         public async Task<ActionResult<ApiResponse<AddBookResult?>>> AddBook(AddNewBook addNewBook)
         {
+
             var validationResult = await _addBookValidator.ValidateAsync(addNewBook);
 
             if (!validationResult.IsValid)
@@ -187,10 +213,23 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
             try
             {
-                var addBookResult = await _bookService.AddNewBookAsync(addNewBook);
+                var imageUrl = await _storageService.UploadFileAsync(addNewBook.Image);
+                var bookToAddDto = new AddBookDto
+                {
+                    AuthorNames = addNewBook.AuthorNames,
+                    Title = addNewBook.Title,
+                    CategoryIds = addNewBook.CategoryIds,
+                    ImageUrl = imageUrl,
+                    Language = addNewBook.Language,
+                    Quantity = addNewBook.Quantity,
+                };
+
+
+                var addBookResult = await _bookService.AddNewBookAsync(bookToAddDto);
                 var response = new ApiResponse<AddBookResult?> { Data = addBookResult, Message = "Book was added succesfully", WasSuccessful = true };
                 return Ok(response);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 var errorResponse = new ApiResponse<AddBookResult?>
                 {
