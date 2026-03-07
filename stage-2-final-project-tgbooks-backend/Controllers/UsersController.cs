@@ -1,12 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using stage_2_final_project_tgbooks_backend.Core.Exceptions;
-using stage_2_final_project_tgbooks_backend.Data.Models;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Users;
 using stage_2_final_project_tgbooks_backend.Responses;
-using stage_2_final_project_tgbooks_backend.Responses.Models.Categories;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Users;
 using stage_2_final_project_tgbooks_backend.Services.Interfaces;
 using WebApplication2.Services.Interfaces;
@@ -24,37 +19,37 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         }
 
         [HttpPost("buy-books")]
-        public async Task<ActionResult<ApiResponse<PurchaseBooksResponse?>>> PurchaseBooksByIdsAsync(PurchaseBooks purchaseBooks)
+        public async Task<ActionResult<ApiResponse<PurchaseBooksResult?>>> PurchaseBooksByIds(PurchaseBooks purchaseBooks)
         {
             try
             {
                 var orderInfo = await _userService.AddOrderAsync(purchaseBooks);
-                var response = new ApiResponse<PurchaseBooksResponse?> { Data = orderInfo, WasSuccessful = true, Message = "Ordering was sucessfull" };
+                var response = new ApiResponse<PurchaseBooksResult?> { Data = orderInfo, WasSuccessful = true, Message = "Ordering was sucessfull" };
                 return Ok(response);
             }
             catch (EntityNotFoundException ex)
             {
-                var notFoundResponse = new ApiResponse<PurchaseBooksResponse?> { Data = null, Message = ex.Message, WasSuccessful = false };
+                var notFoundResponse = new ApiResponse<PurchaseBooksResult?> { Data = null, Message = ex.Message, WasSuccessful = false };
                 return NotFound(notFoundResponse);
             }
             catch (NotEnoughStockException ex)
             {
-                var notEnoughStockResponse = new ApiResponse<PurchaseBooksResponse?> { Data = null, Message = ex.Message, WasSuccessful = false };
+                var notEnoughStockResponse = new ApiResponse<PurchaseBooksResult?> { Data = null, Message = ex.Message, WasSuccessful = false };
                 return BadRequest(notEnoughStockResponse);
             }
             catch (ArgumentOutOfRangeException ex)
             {
-                var notValidAmounrProvidedResponse = new ApiResponse<PurchaseBooksResponse?> { Data = null, Message = ex.Message, WasSuccessful = false };
+                var notValidAmounrProvidedResponse = new ApiResponse<PurchaseBooksResult?> { Data = null, Message = ex.Message, WasSuccessful = false };
                 return BadRequest(notValidAmounrProvidedResponse);
             }
             catch (ArgumentException ex)
             {
-                var badArgumentResponse = new ApiResponse<PurchaseBooksResponse?> { Data = null, Message = ex.Message, WasSuccessful = false };
+                var badArgumentResponse = new ApiResponse<PurchaseBooksResult?> { Data = null, Message = ex.Message, WasSuccessful = false };
                 return BadRequest(badArgumentResponse);
             }
             catch (Exception ex)
             {
-                var errorResponse = new ApiResponse<PurchaseBooksResponse?>
+                var errorResponse = new ApiResponse<PurchaseBooksResult?>
                 {
                     WasSuccessful = false,
                     Message = $"Failed to place an order: {ex.Message}",
@@ -68,7 +63,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
 
         [HttpPost("register")]
-        public async Task<ActionResult<ApiResponse<AddUserResult?>>> RegisterUserAsync(AddUser userToAdd)
+        public async Task<ActionResult<ApiResponse<AddUserResult?>>> RegisterUser(AddUser userToAdd)
         {
             try
             {
@@ -92,7 +87,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
 
         [HttpPost("confirm-email")]
-        public async Task<ActionResult<ApiResponse<ConfirmEmailResult?>>> VerifyEmailAsync(ConfirmEmail confirmEmail)
+        public async Task<ActionResult<ApiResponse<ConfirmEmailResult?>>> VerifyEmail(ConfirmEmail confirmEmail)
         {
             try
             {
@@ -110,7 +105,8 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                 var wrongCodeResponse = new ApiResponse<ConfirmEmailResult?> { Data = null, WasSuccessful = true, Message = ex.Message };
                 return BadRequest(wrongCodeResponse);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 var errorResponse = new ApiResponse<ConfirmEmailResult?> { Data = null, WasSuccessful = false, Message = ex.Message };
                 return StatusCode(500, errorResponse);
             }
@@ -123,7 +119,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             try
             {
                 var userInfo = await _userService.GetUserByEmailAndPasswordAsync(signInUser);
-                var response = new ApiResponse<GetUserByEmailAndPasswordResult?> { Data = userInfo, WasSuccessful = true, Message = "Login succesfull" };
+                var response = new ApiResponse<GetUserByEmailAndPasswordResult?> { Data = userInfo, WasSuccessful = true, Message = "Login successful" };
                 return Ok(response);
             }
             catch (EntityNotFoundException ex)
@@ -138,10 +134,10 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             }
             catch (Exception ex)
             {
-                var errorResponse = new ApiResponse<GetUserByEmailAndPasswordResult?> { Data = null, Message = "Could not Login the user", WasSuccessful = false };
+                var errorResponse = new ApiResponse<GetUserByEmailAndPasswordResult?> { Data = null, Message = $"Could not login the user: {ex.Message}", WasSuccessful = false };
                 return StatusCode(500, errorResponse);
             }
-            
+
         }
 
         [HttpPut("edit-name")]
@@ -149,18 +145,20 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         {
             try
             {
-                var userEditiedInfo =  await _userService.EditUserNameAsync(editUserName);
-                var response = new ApiResponse<EditUserNameResult?> { Data = userEditiedInfo, Message = "Name change successfull", WasSuccessful = true };
+                var userEditiedInfo = await _userService.EditUserNameAsync(editUserName);
+                var response = new ApiResponse<EditUserNameResult?> { Data = userEditiedInfo, Message = "Name changed successfully", WasSuccessful = true };
                 return Ok(response);
-            } catch (EntityNotFoundException ex)
+            }
+            catch (EntityNotFoundException ex)
             {
-                var userNotFoundResponse = new ApiResponse<EditUserNameResult?> {Data = null, WasSuccessful = false, Message = ex.Message };
+                var userNotFoundResponse = new ApiResponse<EditUserNameResult?> { Data = null, WasSuccessful = false, Message = ex.Message };
                 return NotFound(userNotFoundResponse);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                var errorResponse = new ApiResponse<EditUserNameResult?> {  Data = null, WasSuccessful = false, Message = "Coukd not edit user name: " + ex.Message };
+                var errorResponse = new ApiResponse<EditUserNameResult?> { Data = null, WasSuccessful = false, Message = "Coukd not edit user name: " + ex.Message };
                 return StatusCode(500, errorResponse);
-            } 
+            }
         }
 
     }

@@ -7,7 +7,7 @@ namespace stage_2_final_project_tgbooks_backend.Data.Models
     public class Book : BaseEntity
     {
         public string Title { get; set; }
-        public string Author { get; set; }
+        public ICollection<Author> Authors { get; set; } = new List<Author>();
         public Language Language { get; set; }
         public int Quantity { get; set; }
 

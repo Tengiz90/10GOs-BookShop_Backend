@@ -23,7 +23,6 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             _bookService = bookService;
         }
 
-        [HttpGet]
         [HttpGet("get-by-category")]
         public async Task<ActionResult<ApiResponse<ICollection<GetBook>?>>> GetBooksByCategory(
             int categoryId,
@@ -55,7 +54,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
                 return StatusCode(500, errorResponse);
             }
-            
+
         }
 
         [HttpGet("{id}")]
@@ -100,25 +99,18 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         }
         [HttpGet("page")]
         public async Task<ActionResult<ApiResponse<ICollection<GetBook>?>>> GetBooksPage(
+         [FromQuery] string? title, // optional search
          [FromQuery] int pageNumber = 1,
          [FromQuery] int pageSize = 20)
-         {
+        {
             try
             {
-                var books = await _bookService.GetBooksPageAsync(pageNumber, pageSize);
+                var books = await _bookService.GetBooksPageAsync(title, pageNumber, pageSize);
                 var response = new ApiResponse<ICollection<GetBook>?>
                 {
                     WasSuccessful = true,
                     Message = "Books retrieved successfully",
-                    Data = books.Select(b => new GetBook
-                    {
-                        Id = b.Id,
-                        ImageURL = b.ImageURL,
-                        Author  = b.Author,
-                        Language = b.Language,
-                        Quantity = b.Quantity,
-                        Title = b.Title,
-                    }).ToList()
+                    Data = books
                 };
 
                 return Ok(response);
@@ -132,7 +124,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                     Data = null
                 };
 
-                return StatusCode(500, errorResponse); 
+                return StatusCode(500, errorResponse);
             }
         }
 
@@ -142,11 +134,13 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         {
             try
             {
-              var editBookResult = await _bookService.EditBookAsync(book);
-              var response = new ApiResponse<EditBookResult?> { 
-                  WasSuccessful = true,
-                  Message = "Editing book was successfull",
-                  Data = editBookResult };
+                var editBookResult = await _bookService.EditBookAsync(book);
+                var response = new ApiResponse<EditBookResult?>
+                {
+                    WasSuccessful = true,
+                    Message = "Editing book was successful",
+                    Data = editBookResult
+                };
                 return Ok(response);
             }
             catch (EntryPointNotFoundException ex)
@@ -172,5 +166,56 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             }
         }
 
+        [HttpPost("Add")]
+        public async Task<ActionResult<ApiResponse<AddBookResult?>>> AddBook(AddNewBook addNewBook)
+        {
+            try
+            {
+                var addBookResult = await _bookService.AddNewBookAsync(addNewBook);
+                var response = new ApiResponse<AddBookResult?> { Data = addBookResult, Message = "Book was added succesfully", WasSuccessful = true };
+                return Ok(response);
+            } catch (Exception ex)
+            {
+                var errorResponse = new ApiResponse<AddBookResult?>
+                {
+                    WasSuccessful = false,
+                    Message = $"Failed to add book: {ex.Message}",
+                    Data = null
+                };
+
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [HttpGet("get-by-author")]
+        public async Task<ActionResult<ApiResponse<ICollection<GetBook>?>>> GetBooksByAuthor(
+            int authorId)
+        {
+            try
+            {
+                var books = await _bookService.GetBooksByAuthorAsync(authorId);
+
+                var response = new ApiResponse<ICollection<GetBook>?>
+                {
+                    Data = books,
+                    Message = "Books retrieved successfully",
+                    WasSuccessful = true
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new ApiResponse<ICollection<GetBook>?>
+                {
+                    WasSuccessful = false,
+                    Message = $"Could not get the books: {ex.Message}",
+                    Data = null
+                };
+
+                return StatusCode(500, errorResponse);
+            }
+
+        }
     }
 }

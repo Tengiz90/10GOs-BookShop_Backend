@@ -19,7 +19,7 @@ namespace stage_2_final_project_tgbooks_backend.Data.Interfaces
         // Get books by category, sorted alphabetically by Title
         Task<ICollection<Book>> GetBooksByCategoryIdSortedByTitleAsync(int categoryId);
         Task<ICollection<Book>> GetAllBooksAsync();
-        Task<ICollection<Book>> GetBooksPageAsync(int pageNumber, int pageSize);
+        Task<ICollection<Book>> GetBooksPageAsync(string? title, int pageNumber, int pageSize);
         IQueryable<Category> GetCategories();
         Task<User> GetUserByEmailAndPasswordAsync(string email, string password);
 
@@ -30,6 +30,10 @@ namespace stage_2_final_project_tgbooks_backend.Data.Interfaces
         Task<bool> IsUserWithSuchEmailAlreadyVerifiedAsync(string email);
 
         Task<int> ConfirmUserRegistrationAsync(string email, string code);
-       
+
+        Task<ICollection<Author>> GetAuthorsAsync();
+        Task<ICollection<Book>> GetBooksByAuthorIdAsync(int authorId);
+
+
     }
 }

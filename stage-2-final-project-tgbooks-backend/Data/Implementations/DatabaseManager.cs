@@ -16,7 +16,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             _db = db;
         }
 
-        // ------------------ Books ------------------
+       
         public async Task<int> AddNewBookAsync(Book book)
         {
 
@@ -37,9 +37,25 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                 throw new EntityNotFoundException(nameof(Book), updatedBook.Id);
 
             foundBook.Title = updatedBook.Title;
-            foundBook.Author = updatedBook.Author;
             if (updatedBook.Quantity < 0) throw new ArgumentOutOfRangeException(nameof(updatedBook.Quantity), "Book quantity can't be negative");
             foundBook.Quantity = updatedBook.Quantity;
+
+            foreach (var author in updatedBook.Authors)
+            {
+                // Check if this author already exists in the database
+                var existingAuthor = await _db.Authors.FirstOrDefaultAsync(a => a.Id == author.Id);
+                if (existingAuthor != null)
+                {
+                    // Attach the tracked entity
+                    foundBook.Authors.Add(existingAuthor);
+                }
+                else
+                {
+                    // New author, EF will insert it
+                    foundBook.Authors.Add(author);
+                }
+            }
+
 
             foundBook.Categories.Clear();
             foreach (var category in updatedBook.Categories)
@@ -87,9 +103,16 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             return await _db.Books.ToListAsync();
         }
 
-        public async Task<ICollection<Book>> GetBooksPageAsync(int pageNumber, int pageSize)
+        public async Task<ICollection<Book>> GetBooksPageAsync(string? title, int pageNumber, int pageSize)
         {
-            return await _db.Books
+            var query = _db.Books.AsQueryable();
+
+            if (!string.IsNullOrEmpty(title))
+            {
+                query = query.Where(b => b.Title.ToLower().Contains(title.ToLower()));
+            }
+
+            return await query
                 .OrderBy(b => b.Id)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -112,7 +135,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             return book.Id;
         }
 
-        // ------------------ Users ------------------
+
         public async Task<int> AddUserAsync(User user)
         {
             _db.Users.Add(user);
@@ -242,6 +265,20 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
        
         }
 
- 
+        public async Task<ICollection<Author>> GetAuthorsAsync()
+        {
+            return await _db.Authors.ToListAsync();
+        }
+
+        public async Task<ICollection<Book>> GetBooksByAuthorIdAsync(int authorId)
+        {
+            var books = await _db.Books
+                .Include(b => b.Authors)    // include authors so we can filter
+                .Where(b => b.Authors.Any(a => a.Id == authorId)) // filter by author
+                .ToListAsync();
+
+            return books;
+        }
+
     }
 }

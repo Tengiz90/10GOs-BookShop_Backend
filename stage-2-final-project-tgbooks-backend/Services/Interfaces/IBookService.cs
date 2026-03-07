@@ -17,8 +17,9 @@ namespace WebApplication2.Services.Interfaces
         Task<GetBook> GetBookByIdAsync(int id);
         Task<ICollection<GetBook>> GetBooksByCategoryAsync(int categoryId);
         Task<ICollection<GetBook>> GetBooksByCategorySortedAsync(int categoryId);
-        Task<ICollection<Book>> GetBooksPageAsync(int pageNumber, int pageSize);
+        Task<ICollection<GetBook>> GetBooksByAuthorAsync(int authorId);
+        Task<ICollection<GetBook>> GetBooksPageAsync(string? title, int pageNumber, int pageSize);
+ 
 
-  
     }
 }

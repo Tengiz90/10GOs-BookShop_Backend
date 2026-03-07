@@ -83,10 +83,10 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
             }; 
         }
 
-        public async Task<PurchaseBooksResponse> AddOrderAsync(PurchaseBooks purchasebooks)
+        public async Task<PurchaseBooksResult> AddOrderAsync(PurchaseBooks purchasebooks)
         {
             var order = await _databaseManager.PurchaseBooksByIdsAsync(purchasebooks.BookIds, purchasebooks.QuantitiesToPurchaseEach, purchasebooks.UserId);
-            return new PurchaseBooksResponse
+            return new PurchaseBooksResult
             {
                 Id = order.Id,
                 OrderDate = order.CreatedAt,

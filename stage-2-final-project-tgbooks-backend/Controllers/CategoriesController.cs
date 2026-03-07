@@ -18,7 +18,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         }
 
         [HttpGet("get-categories")]
-        public async Task<ActionResult<ApiResponse<ICollection<GetCategory>?>>> GetCategoriesAsync()
+        public async Task<ActionResult<ApiResponse<ICollection<GetCategory>?>>> GetCategories()
         {
             try
             {
@@ -28,7 +28,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                         Id = c.Id,
                         Type = c.Type,
                     }).ToList();
-                var response = new ApiResponse<ICollection<GetCategory>?> { Message = "Categories retrieva was successful", Data = categories, WasSuccessful = true };
+                var response = new ApiResponse<ICollection<GetCategory>?> { Message = "Categories retrieval was successful", Data = categories, WasSuccessful = true };
                 return Ok(response);
             }
             catch (Exception ex)

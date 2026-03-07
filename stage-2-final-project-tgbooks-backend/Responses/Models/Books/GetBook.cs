@@ -1,4 +1,5 @@
 ﻿using stage_2_final_project_tgbooks_backend.Enums;
+using stage_2_final_project_tgbooks_backend.Requests.Models.Authors;
 
 namespace stage_2_final_project_tgbooks_backend.Responses.Models.Books
 {
@@ -6,7 +7,7 @@ namespace stage_2_final_project_tgbooks_backend.Responses.Models.Books
     {
         public int Id { get; set; }
         public string Title { get; set; }
-        public string Author { get; set; }
+        public ICollection<GetAuthor> Authors { get; set; }
         public Language Language { get; set; }
         public int Quantity { get; set; }
 

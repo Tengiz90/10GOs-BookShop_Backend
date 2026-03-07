@@ -2,6 +2,7 @@
 
 using stage_2_final_project_tgbooks_backend.Data.Interfaces;
 using stage_2_final_project_tgbooks_backend.Data.Models;
+using stage_2_final_project_tgbooks_backend.Requests.Models.Authors;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Books;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Users;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Books;
@@ -20,10 +21,23 @@ namespace WebApplication2.Services
 
         public async Task<AddBookResult> AddNewBookAsync(AddNewBook request)
         {
+            var authors = new List<Author>();
+            foreach (var authorName in request.AuthorNames)
+            {
+                // Check if author already exists in DB
+                var existingAuthor = (await _databaseManager.GetAuthorsAsync())
+                    .FirstOrDefault(a => a.Name.ToLower() == authorName.ToLower());
+
+                if (existingAuthor != null)
+                    authors.Add(existingAuthor);
+                else
+                    authors.Add(new Author { Name = authorName }); // create new author
+            }
+
             var book = new Book
             {
                 Title = request.Title,
-                Author = request.Author,
+                Authors = authors,
                 Language = request.Language,
                 Quantity = request.Quantity,
                 ImageURL = request.ImageURL,
@@ -39,11 +53,25 @@ namespace WebApplication2.Services
 
         public async Task<EditBookResult> EditBookAsync(EditBook request)
         {
+            // Map author names to Author entities
+            var authors = new List<Author>();
+            foreach (var authorName in request.AuthorNames)
+            {
+                // Check if author already exists in DB
+                var existingAuthor = (await _databaseManager.GetAuthorsAsync())
+                    .FirstOrDefault(a => a.Name.ToLower() == authorName.ToLower());
+
+                if (existingAuthor != null)
+                    authors.Add(existingAuthor);
+                else
+                    authors.Add(new Author { Name = authorName }); // create new author
+            }
+
             var book = new Book
             {
                 Id = request.Id,
                 Title = request.Title,
-                Author = request.Author,
+                Authors = authors,
                 Language = request.Language,
                 Quantity = request.Quantity,
                 ImageURL = request.ImageURL,
@@ -63,7 +91,11 @@ namespace WebApplication2.Services
             return new GetBook
             {
                 Id = id,
-                Author = book.Author,
+                Authors = book.Authors.Select(au => new GetAuthor
+                {
+                    Id = au.Id,
+                    Name = au.Name,
+                }).ToList(),
                 Title = book.Title,
                 ImageURL = book.ImageURL,
                 Language = book.Language,
@@ -77,7 +109,11 @@ namespace WebApplication2.Services
             return books.Select(b => new GetBook
             {
                 Id = b.Id,
-                Author = b.Author,
+                Authors = b.Authors.Select(au => new GetAuthor
+                {
+                    Id = au.Id,
+                    Name = au.Name,
+                }).ToList(),
                 Title = b.Title,
                 ImageURL = b.ImageURL,
                 Language = b.Language,
@@ -85,6 +121,7 @@ namespace WebApplication2.Services
             }
             ).ToList();
         }
+
 
         public async Task<ICollection<GetBook>> GetBooksByCategorySortedAsync(int categoryId)
         {
@@ -92,7 +129,29 @@ namespace WebApplication2.Services
             return books.Select(b => new GetBook
             {
                 Id = b.Id,
-                Author = b.Author,
+                Authors = b.Authors.Select(au => new GetAuthor
+                {
+                    Id = au.Id,
+                    Name = au.Name,
+                }).ToList(),
+                Title = b.Title,
+                ImageURL = b.ImageURL,
+                Language = b.Language,
+                Quantity = b.Quantity,
+            }
+            ).ToList();
+        }
+        public async Task<ICollection<GetBook>> GetBooksByAuthorAsync(int authorId)
+        {
+            var books = await _databaseManager.GetBooksByAuthorIdAsync(authorId);
+            return books.Select(b => new GetBook
+            {
+                Id = b.Id,
+                Authors = b.Authors.Select(au => new GetAuthor
+                {
+                    Id = au.Id,
+                    Name = au.Name,
+                }).ToList(),
                 Title = b.Title,
                 ImageURL = b.ImageURL,
                 Language = b.Language,
@@ -101,10 +160,23 @@ namespace WebApplication2.Services
             ).ToList();
         }
 
-        public async Task<ICollection<Book>> GetBooksPageAsync(int pageNumber, int pageSize)
+
+        public async Task<ICollection<GetBook>> GetBooksPageAsync(string? title, int pageNumber, int pageSize)
         {
-            var books = await _databaseManager.GetBooksPageAsync(pageNumber, pageSize);
-            return books;
+            var books = await _databaseManager.GetBooksPageAsync(title, pageNumber, pageSize);
+            return books.Select(b => new GetBook
+            {
+                Id = b.Id,
+                ImageURL = b.ImageURL,
+                Authors = b.Authors.Select(au => new GetAuthor
+                {
+                    Id = au.Id,
+                    Name = au.Name,
+                }).ToList(),
+                Language = b.Language,
+                Quantity = b.Quantity,
+                Title = b.Title,
+            }).ToList();
         }
 
   
@@ -116,6 +188,6 @@ namespace WebApplication2.Services
             };
         }
 
-      
+   
     }
 }

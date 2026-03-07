@@ -1,6 +1,6 @@
 ﻿namespace stage_2_final_project_tgbooks_backend.Responses.Models.Users
 {
-    public class PurchaseBooksResponse
+    public class PurchaseBooksResult
     {
         public int Id { get; set; }
 
