@@ -11,6 +11,10 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
         public BlobService(IConfiguration config)
         {
             var connection = Environment.GetEnvironmentVariable("AZURE_STORAGE_KEY");
+
+            if (string.IsNullOrEmpty(connection))
+                throw new Exception("AZURE_STORAGE_KEY environment variable not set");
+
             var client = new BlobServiceClient(connection);
 
             _container = client.GetBlobContainerClient("book-images");

@@ -31,6 +31,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
         {
             var foundBook = await _db.Books
                 .Include(b => b.Categories)
+                .Include(b => b.Authors)
                 .FirstOrDefaultAsync(b => b.Id == updatedBook.Id);
 
             if (foundBook == null)
@@ -74,6 +75,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
         {
             var book = await _db.Books
                 .Include(b => b.Categories)
+                .Include(b => b.Authors)
                 .FirstOrDefaultAsync(b => b.Id == id);
             if (book == null)
             {
@@ -88,6 +90,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
         {
             return await _db.Books
                             .Where(b => b.Categories.Any(c => c.Id == id))
+                            .Include(b => b.Authors)
                             .ToListAsync();
         }
 
@@ -95,12 +98,13 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
         {
             return await _db.Books
                 .Where(b => b.Categories.Any(c => c.Id == categoryId))
+                .Include(b => b.Authors)
                 .OrderBy(b => b.Title)
                 .ToListAsync();
         }
         public async Task<ICollection<Book>> GetAllBooksAsync()
         {
-            return await _db.Books.ToListAsync();
+            return await _db.Books.Include(b => b.Authors).ToListAsync();
         }
 
         public async Task<ICollection<Book>> GetBooksPageAsync(string? title, int pageNumber, int pageSize)
@@ -115,6 +119,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             return await query
                 .OrderBy(b => b.Id)
                 .Skip((pageNumber - 1) * pageSize)
+                .Include(b => b.Authors)
                 .Take(pageSize)
                 .ToListAsync();
         }

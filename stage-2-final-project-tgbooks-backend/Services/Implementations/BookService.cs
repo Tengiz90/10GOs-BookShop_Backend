@@ -35,7 +35,7 @@ namespace WebApplication2.Services
 
             var book = new Book
             {
-                Title = request.Title.Trim().ToLower(),
+                Title = request.Title,
                 Authors = authors,
                 Language = request.Language,
                 Quantity = request.Quantity,

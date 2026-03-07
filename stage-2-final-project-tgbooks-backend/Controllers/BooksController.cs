@@ -160,6 +160,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                 } 
                     var editiedBook = new EditBookDto
                     {
+                        Id = book.Id,
                         AuthorNames = book.AuthorNames,
                         Title = book.Title,
                         CategoryIds = book.CategoryIds,
@@ -192,7 +193,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                 var errorResponse = new ApiResponse<EditBookResult?>
                 {
                     WasSuccessful = false,
-                    Message = $"Failed to edit book: {ex.Message}",
+                    Message = $"Failed to edit book: {ex.InnerException?.Message ?? ex.Message}",
                     Data = null
                 };
 
