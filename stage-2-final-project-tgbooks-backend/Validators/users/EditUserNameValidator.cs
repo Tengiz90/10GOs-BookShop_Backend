@@ -3,9 +3,9 @@ using stage_2_final_project_tgbooks_backend.Requests.Models.Users;
 
 namespace stage_2_final_project_tgbooks_backend.Validators.users
 {
-    public class EditUserValidator : AbstractValidator<EditUserName>
+    public class EditUserNameValidator : AbstractValidator<EditUserName>
     {
-        public EditUserValidator()
+        public EditUserNameValidator()
         {
             RuleFor(u => u.FirstName)
                 .NotEmpty().WithMessage("User first name can't be empty.")

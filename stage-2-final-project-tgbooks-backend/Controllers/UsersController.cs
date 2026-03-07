@@ -1,9 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using stage_2_final_project_tgbooks_backend.Core.Exceptions;
+using stage_2_final_project_tgbooks_backend.Data.Models;
+using stage_2_final_project_tgbooks_backend.Requests.Models.Books;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Users;
 using stage_2_final_project_tgbooks_backend.Responses;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Users;
 using stage_2_final_project_tgbooks_backend.Services.Interfaces;
+using stage_2_final_project_tgbooks_backend.Validators.books;
+using stage_2_final_project_tgbooks_backend.Validators.users;
 using WebApplication2.Services.Interfaces;
 
 namespace stage_2_final_project_tgbooks_backend.Controllers
@@ -13,9 +18,18 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
-        public UsersController(IUserService userService)
+        private readonly IValidator<AddUser> _addUserValidator;
+        private readonly IValidator<EditUserName> _editUserNameValidator;
+        private readonly IValidator<ConfirmEmail> _confirmEmailValidator;
+        public UsersController(IUserService userService,
+            IValidator<AddUser> addUserValidator,
+            IValidator<EditUserName> editUserNameValidator,
+            IValidator<ConfirmEmail> confirmEmailValidator)
         {
             _userService = userService;
+            _addUserValidator = addUserValidator;
+            _editUserNameValidator = editUserNameValidator;
+            _confirmEmailValidator = confirmEmailValidator;
         }
 
         [HttpPost("buy-books")]
@@ -65,6 +79,13 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<ApiResponse<AddUserResult?>>> RegisterUser(AddUser userToAdd)
         {
+            var validationResult = await _addUserValidator.ValidateAsync(userToAdd);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             try
             {
                 var userInfo = await _userService.AddNewUserAsync(userToAdd);
@@ -89,6 +110,13 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         [HttpPost("confirm-email")]
         public async Task<ActionResult<ApiResponse<ConfirmEmailResult?>>> VerifyEmail(ConfirmEmail confirmEmail)
         {
+            var validationResult = await _confirmEmailValidator.ValidateAsync(confirmEmail);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             try
             {
                 var userId = await _userService.ConfirmEmailAsync(confirmEmail);
@@ -143,6 +171,13 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         [HttpPut("edit-name")]
         public async Task<ActionResult<ApiResponse<EditUserNameResult?>>> EditNameOfUser(EditUserName editUserName)
         {
+            var validationResult = await _editUserNameValidator.ValidateAsync(editUserName);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             try
             {
                 var userEditiedInfo = await _userService.EditUserNameAsync(editUserName);

@@ -1,4 +1,5 @@
 
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsyncta.Implementations;
 using stage_2_final_project_tgbooks_backend.Data;
@@ -6,6 +7,7 @@ using stage_2_final_project_tgbooks_backend.Data.Implementations;
 using stage_2_final_project_tgbooks_backend.Data.Interfaces;
 using stage_2_final_project_tgbooks_backend.Services.Implementations;
 using stage_2_final_project_tgbooks_backend.Services.Interfaces;
+using System.Reflection;
 using WebApplication2.Services;
 using WebApplication2.Services.Interfaces;
 
@@ -31,6 +33,9 @@ namespace stage_2_final_project_tgbooks_backend
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IAuthorService, AuthorService>();
             builder.Services.AddSingleton<IEmailSender, EmailSender>();
+
+            // register all validators in the assembly
+            builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
             // Add Swagger (Swashbuckle)
             builder.Services.AddEndpointsApiExplorer();

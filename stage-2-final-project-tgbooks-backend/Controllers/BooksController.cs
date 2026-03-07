@@ -1,15 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using stage_2_final_project_tgbooks_backend.Core.Exceptions;
-using stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsyncta.Implementations;
-using stage_2_final_project_tgbooks_backend.Data.Interfaces;
-using stage_2_final_project_tgbooks_backend.Data.Models;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Books;
 using stage_2_final_project_tgbooks_backend.Responses;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Books;
 using WebApplication2.Services.Interfaces;
-using static System.Reflection.Metadata.BlobBuilder;
 
 namespace stage_2_final_project_tgbooks_backend.Controllers
 {
@@ -18,9 +13,16 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
     public class BooksController : ControllerBase
     {
         private readonly IBookService _bookService;
-        public BooksController(IBookService bookService)
+        private readonly IValidator<AddNewBook> _addBookValidator;
+        private readonly IValidator<EditBook> _editBookValidator;
+        public BooksController(
+            IBookService bookService,
+            IValidator<AddNewBook> addBookValidator,
+            IValidator<EditBook> editBookValidator)
         {
             _bookService = bookService;
+            _addBookValidator = addBookValidator;
+            _editBookValidator = editBookValidator;
         }
 
         [HttpGet("get-by-category")]
@@ -132,6 +134,13 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         [HttpPut("edit")]
         public async Task<ActionResult<ApiResponse<EditBookResult?>>> EditBookById(EditBook book)
         {
+            var validationResult = await _editBookValidator.ValidateAsync(book);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             try
             {
                 var editBookResult = await _bookService.EditBookAsync(book);
@@ -169,6 +178,13 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         [HttpPost("Add")]
         public async Task<ActionResult<ApiResponse<AddBookResult?>>> AddBook(AddNewBook addNewBook)
         {
+            var validationResult = await _addBookValidator.ValidateAsync(addNewBook);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             try
             {
                 var addBookResult = await _bookService.AddNewBookAsync(addNewBook);

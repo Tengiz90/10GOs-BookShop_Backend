@@ -26,7 +26,7 @@ namespace WebApplication2.Services
             {
                 // Check if author already exists in DB
                 var existingAuthor = (await _databaseManager.GetAuthorsAsync())
-                    .FirstOrDefault(a => a.Name.ToLower() == authorName.ToLower());
+                    .FirstOrDefault(a => a.Name.Trim().ToLower() == authorName.Trim().ToLower());
 
                 if (existingAuthor != null)
                     authors.Add(existingAuthor);
@@ -36,7 +36,7 @@ namespace WebApplication2.Services
 
             var book = new Book
             {
-                Title = request.Title,
+                Title = request.Title.Trim().ToLower(),
                 Authors = authors,
                 Language = request.Language,
                 Quantity = request.Quantity,
@@ -59,7 +59,7 @@ namespace WebApplication2.Services
             {
                 // Check if author already exists in DB
                 var existingAuthor = (await _databaseManager.GetAuthorsAsync())
-                    .FirstOrDefault(a => a.Name.ToLower() == authorName.ToLower());
+                    .FirstOrDefault(a => a.Name.Trim().ToLower() == authorName.Trim().ToLower());
 
                 if (existingAuthor != null)
                     authors.Add(existingAuthor);
@@ -70,7 +70,7 @@ namespace WebApplication2.Services
             var book = new Book
             {
                 Id = request.Id,
-                Title = request.Title,
+                Title = request.Title.Trim().ToLower(),
                 Authors = authors,
                 Language = request.Language,
                 Quantity = request.Quantity,
