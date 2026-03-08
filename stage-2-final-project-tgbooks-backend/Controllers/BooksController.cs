@@ -157,6 +157,8 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                 if (book.Image != null)
                 {
                     imageUrl = await _storageService.UploadFileAsync(book.Image);
+                    await _storageService.DeleteFileAsync(book.ImageUrlBefore);
+                    Console.WriteLine("aaaaaaaaa");
                 } 
                     var editiedBook = new EditBookDto
                     {

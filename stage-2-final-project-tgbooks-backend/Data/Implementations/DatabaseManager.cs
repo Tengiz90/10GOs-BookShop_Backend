@@ -40,6 +40,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             foundBook.Title = updatedBook.Title;
             if (updatedBook.Quantity < 0) throw new ArgumentOutOfRangeException(nameof(updatedBook.Quantity), "Book quantity can't be negative");
             foundBook.Quantity = updatedBook.Quantity;
+            foundBook.ImageURL = updatedBook.ImageURL;
 
             foreach (var author in updatedBook.Authors)
             {

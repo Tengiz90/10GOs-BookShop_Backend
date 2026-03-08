@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using stage_2_final_project_tgbooks_backend.Services.Interfaces;
 using WebApplication2.Services.Interfaces;
 
@@ -27,9 +28,28 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
             var blobClient = _container.GetBlobClient(fileName); //creates a client object representing a single blob inside that container
 
             using var stream = file.OpenReadStream();
-            await blobClient.UploadAsync(stream);
+
+            var options = new BlobUploadOptions
+            {
+                HttpHeaders = new BlobHttpHeaders
+                {
+                    ContentType = file.ContentType
+                }
+            };
+
+            await blobClient.UploadAsync(stream, options);
 
             return blobClient.Uri.ToString();
+        }
+        public async Task DeleteFileAsync(string blobUrl)
+        {
+            var uri = new Uri(blobUrl);
+
+            var blobName = Path.GetFileName(uri.LocalPath);
+
+            var blobClient = _container.GetBlobClient(blobName);
+
+            await blobClient.DeleteIfExistsAsync();
         }
     }
 }
