@@ -280,11 +280,13 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         }
 
         [HttpDelete("delete")]
-        public async Task<ActionResult<ApiResponse<RemoveBookByIdResult?>>> DeleteBook(int id)
+        public async Task<ActionResult<ApiResponse<RemoveBookByIdResult?>>> DeleteBook(RemoveBook bookInfo)
         {
             try
             {
-                var deleteBookResult = await _bookService.RemoveBookAsync(id);
+                var deleteBookResult = await _bookService.RemoveBookAsync(bookInfo.Id);
+                await _storageService.DeleteFileAsync(bookInfo.imageUrl);
+
                 var response = new ApiResponse<RemoveBookByIdResult?> { Data = deleteBookResult, Message = "Deletion was successful", WasSuccessful = true };
                 return Ok(response);
 
