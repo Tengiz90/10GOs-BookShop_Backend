@@ -16,7 +16,6 @@ namespace stage_2_final_project_tgbooks_backend.Requests.Models.Users
         public string City { get; set; }
 
         public string Country { get; } = "Georgia";
-        public string VerificationCode { get; set; }   
 
     }
 }

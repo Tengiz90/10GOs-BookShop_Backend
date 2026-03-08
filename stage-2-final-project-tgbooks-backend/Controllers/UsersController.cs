@@ -1,8 +1,10 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using stage_2_final_project_tgbooks_backend.Core.Exceptions;
+using stage_2_final_project_tgbooks_backend.Helpers;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Users;
 using stage_2_final_project_tgbooks_backend.Responses;
+using stage_2_final_project_tgbooks_backend.Responses.Models.Books;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Users;
 using stage_2_final_project_tgbooks_backend.Services.Interfaces;
 
@@ -16,15 +18,18 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         private readonly IValidator<AddUser> _addUserValidator;
         private readonly IValidator<EditUserName> _editUserNameValidator;
         private readonly IValidator<ConfirmEmail> _confirmEmailValidator;
+        private readonly IValidator<SignInUser> _signInUserValidator;
         public UsersController(IUserService userService,
             IValidator<AddUser> addUserValidator,
             IValidator<EditUserName> editUserNameValidator,
-            IValidator<ConfirmEmail> confirmEmailValidator)
+            IValidator<ConfirmEmail> confirmEmailValidator,
+            IValidator<SignInUser> signInUserValidator)
         {
             _userService = userService;
             _addUserValidator = addUserValidator;
             _editUserNameValidator = editUserNameValidator;
             _confirmEmailValidator = confirmEmailValidator;
+            _signInUserValidator = signInUserValidator;
         }
 
         [HttpPost("buy-books")]
@@ -78,7 +83,8 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
             if (!validationResult.IsValid)
             {
-                return BadRequest(validationResult.Errors);
+                var response = ValidationHelper.CreateValidationFailedResponse<AddUserResult?>(validationResult.Errors);
+                return BadRequest(response);
             }
 
             try
@@ -109,7 +115,8 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
             if (!validationResult.IsValid)
             {
-                return BadRequest(validationResult.Errors);
+                var response = ValidationHelper.CreateValidationFailedResponse<ConfirmEmailResult?>(validationResult.Errors);
+                return BadRequest(response);
             }
 
             try
@@ -139,6 +146,14 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         [HttpPost("sign-in")]
         public async Task<ActionResult<ApiResponse<GetUserByEmailAndPasswordResult?>>> SignIn(SignInUser signInUser)
         {
+            var validationResult = await _signInUserValidator.ValidateAsync(signInUser);
+
+            if (!validationResult.IsValid)
+            {
+                var response = ValidationHelper.CreateValidationFailedResponse<GetUserByEmailAndPasswordResult?>(validationResult.Errors);
+                return BadRequest(response);
+            }
+
             try
             {
                 var userInfo = await _userService.GetUserByEmailAndPasswordAsync(signInUser);
@@ -170,7 +185,8 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
             if (!validationResult.IsValid)
             {
-                return BadRequest(validationResult.Errors);
+                var response = ValidationHelper.CreateValidationFailedResponse<EditUserNameResult?>(validationResult.Errors);
+                return BadRequest(response);
             }
 
             try

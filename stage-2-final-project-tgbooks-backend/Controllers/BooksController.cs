@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using stage_2_final_project_tgbooks_backend.Core.Exceptions;
+using stage_2_final_project_tgbooks_backend.Helpers;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Books;
 using stage_2_final_project_tgbooks_backend.Responses;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Books;
@@ -148,7 +149,8 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
             if (!validationResult.IsValid)
             {
-                return BadRequest(validationResult.Errors);
+                var response = ValidationHelper.CreateValidationFailedResponse<EditBookResult?>(validationResult.Errors);
+                return BadRequest(response);
             }
 
             try
@@ -159,17 +161,17 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                     imageUrl = await _storageService.UploadFileAsync(book.Image);
                     await _storageService.DeleteFileAsync(book.ImageUrlBefore);
                     Console.WriteLine("aaaaaaaaa");
-                } 
-                    var editiedBook = new EditBookDto
-                    {
-                        Id = book.Id,
-                        AuthorNames = book.AuthorNames,
-                        Title = book.Title,
-                        CategoryIds = book.CategoryIds,
-                        ImageURL = imageUrl,
-                        Language = book.Language,
-                        Quantity = book.Quantity,
-                    };
+                }
+                var editiedBook = new EditBookDto
+                {
+                    Id = book.Id,
+                    AuthorNames = book.AuthorNames,
+                    Title = book.Title,
+                    CategoryIds = book.CategoryIds,
+                    ImageURL = imageUrl,
+                    Language = book.Language,
+                    Quantity = book.Quantity,
+                };
 
                 var editBookResult = await _bookService.EditBookAsync(editiedBook);
                 var response = new ApiResponse<EditBookResult?>
@@ -211,7 +213,8 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
             if (!validationResult.IsValid)
             {
-                return BadRequest(validationResult.Errors);
+                var response = ValidationHelper.CreateValidationFailedResponse<AddBookResult?>(validationResult.Errors);
+                return BadRequest(response);
             }
 
             try
@@ -274,6 +277,39 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                 return StatusCode(500, errorResponse);
             }
 
+        }
+
+        [HttpDelete("delete")]
+        public async Task<ActionResult<ApiResponse<RemoveBookByIdResult?>>> DeleteBook(int id)
+        {
+            try
+            {
+                var deleteBookResult = await _bookService.RemoveBookAsync(id);
+                var response = new ApiResponse<RemoveBookByIdResult?> { Data = deleteBookResult, Message = "Deletion was successful", WasSuccessful = true };
+                return Ok(response);
+
+            }
+            catch (EntityNotFoundException ex)
+            {
+                var notFoundResponse = new ApiResponse<RemoveBookByIdResult?>
+                {
+                    WasSuccessful = false,
+                    Message = ex.Message,
+                    Data = null
+                };
+                return NotFound(notFoundResponse);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new ApiResponse<ICollection<RemoveBookByIdResult>?>
+                {
+                    WasSuccessful = false,
+                    Message = $"Could not delete the book: {ex.Message}",
+                    Data = null
+                };
+
+                return StatusCode(500, errorResponse);
+            }
         }
     }
 }
