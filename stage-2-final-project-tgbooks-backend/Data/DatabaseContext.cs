@@ -76,7 +76,12 @@ namespace stage_2_final_project_tgbooks_backend.Data
                .HasIndex(u => u.Email)
                .IsUnique()
                .HasFilter("[IsVerified] = 1");
-        }
+
+            builder.Entity<User>()
+               .HasIndex(u => u.EmailVerificationCode)
+               .IsUnique()
+               .HasFilter("[IsVerified] = 0");
+                }
 
 
 

@@ -20,9 +20,10 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
         }
         public async Task<AddUserResult> AddNewUserAsync(AddUser user)
         {
-            var emailVerificationCode = GenereateRandom4DigitCode();
+            var email = CapitalizeFirstLetter(user.Email);
+            var emailVerificationCode = await GenerateRandom4DigitCode(email);
             var userToAdd = new User {
-                Email = CapitalizeFirstLetter(user.Email),
+                Email = email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 DateOfBirth = user.DateOfBirth,
@@ -108,11 +109,33 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
             return new EditUserNameResult { FirstName = nameResult.FirstName, LastName =nameResult.LastName, UserId = nameResult.Id };
         }
 
-        private string GenereateRandom4DigitCode()
+        public async Task<bool> IsVerificationCodeUniqueForEmailAsync(string code, string email)
         {
-            Random rand = new Random();
-            int code = rand.Next(1000, 9999);
-            return code.ToString();
+            if (string.IsNullOrWhiteSpace(code))
+                throw new ArgumentException("Code cannot be null or empty.", nameof(code));
+
+            // Check if any unverified user already has this code
+            bool exists = await _databaseManager.IsVerificationCodeUniqueForEmailAsync(code, email);
+
+            return exists; // True = unique, False = already used
+        }
+
+        private async Task<string> GenerateRandom4DigitCode(string email)
+        {
+            string code;
+
+            do
+            {
+                //.NET 6 introduced Random.Shared, which is:
+                //Thread - safe
+                //Fast
+                //One shared instance
+                //No need to manage it yourself
+                code = Random.Shared.Next(1000, 10000).ToString();
+            }
+            while (!await IsVerificationCodeUniqueForEmailAsync(code, email));
+
+            return code;
         }
 
         private void SendCodeToEmail(string email, string code)

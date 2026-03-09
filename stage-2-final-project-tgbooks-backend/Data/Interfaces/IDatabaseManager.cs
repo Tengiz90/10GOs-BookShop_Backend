@@ -34,6 +34,10 @@ namespace stage_2_final_project_tgbooks_backend.Data.Interfaces
         Task<ICollection<Author>> GetAuthorsAsync();
         Task<ICollection<Book>> GetBooksByAuthorIdAsync(int authorId);
 
+        Task<ICollection<User>> GetAllUsers();
+
+        Task<bool> IsVerificationCodeUniqueForEmailAsync(string code, string email);
+
 
     }
 }

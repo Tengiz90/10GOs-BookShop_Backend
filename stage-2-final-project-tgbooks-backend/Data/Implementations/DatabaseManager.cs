@@ -285,5 +285,21 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             return books;
         }
 
+        public async Task<ICollection<User>> GetAllUsers()
+        {
+            return await _db.Users.ToListAsync();
+        }
+
+        public async Task<bool> IsVerificationCodeUniqueForEmailAsync(string code, string email)
+        {
+            if (string.IsNullOrWhiteSpace(code))
+                throw new ArgumentException("Code cannot be null or empty.", nameof(code));
+
+            bool exists = await _db.Users
+                .AnyAsync(u => !u.IsVerified && u.EmailVerificationCode == code && u.Email == email);
+
+            return !exists;
+        }
+
     }
 }
