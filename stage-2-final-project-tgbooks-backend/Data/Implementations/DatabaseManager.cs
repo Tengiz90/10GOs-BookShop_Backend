@@ -89,7 +89,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
         public async Task<ICollection<Book>> GetBooksByCategoryIdAsync(int id)
         {
             return await _db.Books
-                            .Where(b => b.Categories.Any(c => c.Id == id))
+                            .Where(b => (b.Categories.Any(c => c.Id == id)) && !b.IsDeleted)
                             .Include(b => b.Authors)
                             .ToListAsync();
         }
@@ -97,14 +97,14 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
         public async Task<ICollection<Book>> GetBooksByCategoryIdSortedByTitleAsync(int categoryId)
         {
             return await _db.Books
-                .Where(b => b.Categories.Any(c => c.Id == categoryId))
+                .Where(b => (b.Categories.Any(c => c.Id == categoryId)) && !b.IsDeleted)
                 .Include(b => b.Authors)
                 .OrderBy(b => b.Title)
                 .ToListAsync();
         }
         public async Task<ICollection<Book>> GetAllBooksAsync()
         {
-            return await _db.Books.Include(b => b.Authors).ToListAsync();
+            return await _db.Books.Include(b => b.Authors).Where(b => !b.IsDeleted).ToListAsync();
         }
 
         public async Task<ICollection<Book>> GetBooksPageAsync(string? title, int pageNumber, int pageSize)
@@ -118,6 +118,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
 
             return await query
                 .OrderBy(b => b.Id)
+                .Where(b => !b.IsDeleted)
                 .Skip((pageNumber - 1) * pageSize)
                 .Include(b => b.Authors)
                 .Take(pageSize)
@@ -135,7 +136,8 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             if (book == null)
                 throw new EntityNotFoundException(nameof(Book), id);
 
-            _db.Books.Remove(book);
+            //_db.Books.Remove(book);
+            book.IsDeleted = true;
             await _db.SaveChangesAsync();
             return book.Id;
         }
@@ -143,6 +145,16 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
 
         public async Task<int> AddUserAsync(User user)
         {
+
+            var existingUser = await _db.Users
+                .FirstOrDefaultAsync(u => u.Email == user.Email && u.IsVerified);
+
+            if (existingUser != null)
+            {
+                throw new Exception("A verified user with this email already exists.");
+            }
+
+
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
             return user.Id;
@@ -279,7 +291,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
         {
             var books = await _db.Books
                 .Include(b => b.Authors)    // include authors so we can filter
-                .Where(b => b.Authors.Any(a => a.Id == authorId)) // filter by author
+                .Where(b => (b.Authors.Any(a => a.Id == authorId)) && !b.IsDeleted) // filter by author
                 .ToListAsync();
 
             return books;

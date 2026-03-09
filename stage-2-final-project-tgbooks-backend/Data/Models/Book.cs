@@ -10,6 +10,7 @@ namespace stage_2_final_project_tgbooks_backend.Data.Models
         public ICollection<Author> Authors { get; set; } = new List<Author>();
         public Language Language { get; set; }
         public int Quantity { get; set; }
+        public bool IsDeleted { get; set; } = false;
 
         public string ImageURL { get; set; }
 

@@ -1,12 +1,13 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using stage_2_final_project_tgbooks_backend.Core.Exceptions;
+using stage_2_final_project_tgbooks_backend.Enums;
 using stage_2_final_project_tgbooks_backend.Helpers;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Books;
 using stage_2_final_project_tgbooks_backend.Responses;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Books;
-using stage_2_final_project_tgbooks_backend.Services;
 using stage_2_final_project_tgbooks_backend.Services.AdditionalModels;
 using stage_2_final_project_tgbooks_backend.Services.Interfaces;
 using WebApplication2.Services.Interfaces;
@@ -142,6 +143,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         }
 
 
+        [Authorize (Roles = "Admin")]
         [HttpPut("edit")]
         public async Task<ActionResult<ApiResponse<EditBookResult?>>> EditBookById(EditBook book)
         {
@@ -205,6 +207,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("Add")]
         public async Task<ActionResult<ApiResponse<AddBookResult?>>> AddBook(AddNewBook addNewBook)
         {
@@ -279,6 +282,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("delete")]
         public async Task<ActionResult<ApiResponse<RemoveBookByIdResult?>>> DeleteBook(RemoveBook bookInfo)
         {

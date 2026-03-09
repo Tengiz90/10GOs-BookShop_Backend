@@ -1,4 +1,5 @@
 ﻿using stage_2_final_project_tgbooks_backend.Core;
+using stage_2_final_project_tgbooks_backend.Enums;
 
 namespace stage_2_final_project_tgbooks_backend.Data.Models
 {
@@ -8,6 +9,7 @@ namespace stage_2_final_project_tgbooks_backend.Data.Models
         public string LastName { get; set; }
         public string Email { get; set; }
         public DateOnly DateOfBirth { get; set; }
+        public Role Role { get; set; }
         public string PasswordHash { get; set; }
 
         public bool IsVerified { get; set; } = false;

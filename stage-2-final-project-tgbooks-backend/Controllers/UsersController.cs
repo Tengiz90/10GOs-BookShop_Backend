@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using stage_2_final_project_tgbooks_backend.Core.Exceptions;
 using stage_2_final_project_tgbooks_backend.Helpers;
@@ -31,6 +32,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             _signInUserValidator = signInUserValidator;
         }
 
+        [Authorize(Roles = "Customer")]
         [HttpPost("buy-books")]
         public async Task<ActionResult<ApiResponse<PurchaseBooksResult?>>> PurchaseBooksByIds(PurchaseBooks purchaseBooks)
         {
@@ -106,7 +108,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         }
 
 
-
+        [Authorize]
         [HttpPost("confirm-email")]
         public async Task<ActionResult<ApiResponse<ConfirmEmailResult?>>> VerifyEmail(ConfirmEmail confirmEmail)
         {
@@ -156,7 +158,19 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             try
             {
                 var userInfo = await _userService.GetUserByEmailAndPasswordAsync(signInUser);
-                var response = new ApiResponse<GetUserByEmailAndPasswordResult?> { Data = userInfo, WasSuccessful = true, Message = "Login successful" };
+                var jwtToken = _userService.GenerateJwtToken(userInfo.Id, userInfo.Email, userInfo.Role, signInUser.client);
+                var responseData = new GetUserByEmailAndPasswordResult
+                {
+                    DateOfBirth = userInfo.DateOfBirth,
+                    Email = userInfo.Email,
+                    FirstName = userInfo.FirstName,
+                    LastName = userInfo.LastName,
+                    Id = userInfo.Id,
+                    JwtToken = jwtToken,
+                    Orders = userInfo.Orders,
+
+                };
+                var response = new ApiResponse<GetUserByEmailAndPasswordResult?> { Data = responseData, WasSuccessful = true, Message = "Login successful" };
                 return Ok(response);
             }
             catch (EntityNotFoundException ex)
@@ -177,6 +191,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
         }
 
+        [Authorize]
         [HttpPut("edit-name")]
         public async Task<ActionResult<ApiResponse<EditUserNameResult?>>> EditNameOfUser(EditUserName editUserName)
         {

@@ -1,5 +1,7 @@
-﻿using stage_2_final_project_tgbooks_backend.Requests.Models.Users;
+﻿using stage_2_final_project_tgbooks_backend.Enums;
+using stage_2_final_project_tgbooks_backend.Requests.Models.Users;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Users;
+using stage_2_final_project_tgbooks_backend.Services.AdditionalModels;
 
 namespace stage_2_final_project_tgbooks_backend.Services.Interfaces
 {
@@ -7,8 +9,10 @@ namespace stage_2_final_project_tgbooks_backend.Services.Interfaces
     {
         Task<AddUserResult> AddNewUserAsync(AddUser user);
         Task<ConfirmEmailResult> ConfirmEmailAsync(ConfirmEmail confirmEmail);
-        Task<GetUserByEmailAndPasswordResult> GetUserByEmailAndPasswordAsync(SignInUser signInUser);
+        Task<GetUserByEmailAndPasswordResultDto> GetUserByEmailAndPasswordAsync(SignInUser signInUser);
         Task<PurchaseBooksResult> AddOrderAsync(PurchaseBooks order);
         Task<EditUserNameResult> EditUserNameAsync(EditUserName userName);
+        string GenerateJwtToken(int userId, string userEmail, Role role, Client client);
+
     }
 }

@@ -1,10 +1,14 @@
-﻿using stage_2_final_project_tgbooks_backend.Data.Implementations;
+﻿using Microsoft.IdentityModel.Tokens;
 using stage_2_final_project_tgbooks_backend.Data.Interfaces;
 using stage_2_final_project_tgbooks_backend.Data.Models;
+using stage_2_final_project_tgbooks_backend.Enums;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Users;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Users;
+using stage_2_final_project_tgbooks_backend.Services.AdditionalModels;
 using stage_2_final_project_tgbooks_backend.Services.Interfaces;
-using System.Net.Security;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace stage_2_final_project_tgbooks_backend.Services.Implementations
 {
@@ -27,6 +31,7 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 DateOfBirth = user.DateOfBirth,
+                Role = Role.Customer,
                 EmailVerificationCode = emailVerificationCode,
                 Address = new Address
                 {
@@ -56,12 +61,13 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
 
         }
 
-        public async Task<GetUserByEmailAndPasswordResult> GetUserByEmailAndPasswordAsync(SignInUser signInUser)
+        public async Task<GetUserByEmailAndPasswordResultDto> GetUserByEmailAndPasswordAsync(SignInUser signInUser)
         {
             var user = await _databaseManager.GetUserByEmailAndPasswordAsync(CapitalizeFirstLetter(signInUser.Email), signInUser.Password);
-            return new GetUserByEmailAndPasswordResult
+            return new GetUserByEmailAndPasswordResultDto
             {
                 Id = user.Id,
+                Role = user.Role,
                 DateOfBirth = user.DateOfBirth,
                 Email = user.Email,
                 FirstName = user.FirstName,
@@ -151,5 +157,46 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
 
             return char.ToUpper(input[0]) + input.Substring(1).ToLower();
         }
+
+        public string GenerateJwtToken(int userId, string userEmail, Role role, Client client)
+        {
+            var jwtSecret = Environment.GetEnvironmentVariable("JwtSecret");
+            if (string.IsNullOrWhiteSpace(jwtSecret))
+            {
+                throw new InvalidOperationException("JWT secret key is not set in environment variables.");
+            }
+
+            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
+
+            var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
+
+            string roleAsString = role.ToString();
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.NameId, userId.ToString()),
+                new Claim(ClaimTypes.Email, userEmail),
+                new Claim(ClaimTypes.Role, roleAsString)
+            };
+
+            string audience = client switch
+            {
+                Client.Android => "10GO-Android-App",
+                Client.iOS => "10GO-iOS-App",
+                _ => throw new ArgumentException("Invalid client")
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: "10GO's books backend",
+                audience: audience,
+                claims: claims,
+                expires: DateTime.Now.AddHours(8),
+                signingCredentials: credentials
+                );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+      
     }
 }
