@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Authors;
 using stage_2_final_project_tgbooks_backend.Responses;
@@ -16,6 +17,8 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         {
             _orderService = orderService;
         }
+
+        [Authorize(Roles = "Admin")]
         [HttpGet("get-all")]
         public async Task<ActionResult<ApiResponse<ICollection<GetOrderWithDetails>?>>> GetAuthors()
         {
