@@ -123,6 +123,9 @@ namespace stage_2_final_project_tgbooks_backend
             builder.Services.AddHostedService<UnverifiedUserCleanupService>();
 
             var app = builder.Build();
+            app.Urls.Clear();
+            app.Urls.Add("http://0.0.0.0:5001");
+
 
             // 4. Configure Middleware Order (CRITICAL)
             if (app.Environment.IsDevelopment())
@@ -138,7 +141,7 @@ namespace stage_2_final_project_tgbooks_backend
             app.UseAuthorization();
 
             app.MapControllers();
-
+            app.Urls.Add("http://0.0.0.0:5000");
             app.Run();
         }
     }
