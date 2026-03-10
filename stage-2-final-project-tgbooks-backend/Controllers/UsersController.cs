@@ -99,7 +99,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                 var errorResponse = new ApiResponse<AddUserResult?>
                 {
                     WasSuccessful = false,
-                    Message = $"Failed to register an user: {ex.Message}",
+                    Message = $"Failed to register user: {ex.InnerException?.Message ?? ex.Message}",
                     Data = null
                 };
 

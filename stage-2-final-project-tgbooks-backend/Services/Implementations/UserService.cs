@@ -30,6 +30,7 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
                 Email = email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.Password),
                 DateOfBirth = user.DateOfBirth,
                 Role = Role.Customer,
                 EmailVerificationCode = emailVerificationCode,
