@@ -1,9 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using stage_2_final_project_tgbooks_backend.Core.Exceptions;
-using stage_2_final_project_tgbooks_backend.Enums;
 using stage_2_final_project_tgbooks_backend.Helpers;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Books;
 using stage_2_final_project_tgbooks_backend.Responses;
@@ -162,7 +160,6 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                 {
                     imageUrl = await _storageService.UploadFileAsync(book.Image);
                     await _storageService.DeleteFileAsync(book.ImageUrlBefore);
-                    Console.WriteLine("aaaaaaaaa");
                 }
                 var editiedBook = new EditBookDto
                 {

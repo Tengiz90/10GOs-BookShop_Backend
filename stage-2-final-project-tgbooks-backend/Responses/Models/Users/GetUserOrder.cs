@@ -1,6 +1,6 @@
 ﻿namespace stage_2_final_project_tgbooks_backend.Responses.Models.Users
 {
-    public class GetOrder
+    public class GetUserOrder
     {
         public int Id { get; set; }
 

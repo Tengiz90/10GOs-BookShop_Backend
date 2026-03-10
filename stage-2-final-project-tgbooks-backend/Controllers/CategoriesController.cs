@@ -17,7 +17,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             _categoryService = categoryService;
         }
 
-        [HttpGet("get-categories")]
+        [HttpGet("get-all")]
         public async Task<ActionResult<ApiResponse<ICollection<GetCategory>?>>> GetCategories()
         {
             try
@@ -34,7 +34,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             catch (Exception ex)
             {
                 {
-                    var errorResponse = new ApiResponse<GetCategory?>
+                    var errorResponse = new ApiResponse<ICollection<GetCategory>?>
                     {
                         WasSuccessful = false,
                         Message = $"Failed to retrieve categories: {ex.Message}",

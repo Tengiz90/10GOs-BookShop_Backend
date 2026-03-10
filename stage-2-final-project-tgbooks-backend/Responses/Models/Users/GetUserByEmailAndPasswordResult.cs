@@ -8,7 +8,7 @@
         public string Email { get; set; }
         public string JwtToken { get; set; }
         public DateOnly DateOfBirth { get; set; }
-        public ICollection<GetOrder> Orders {  get; set; }
+        public ICollection<GetUserOrder> Orders {  get; set; }
         public string FullName => $"{FirstName} {LastName}";
     }
 }

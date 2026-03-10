@@ -112,7 +112,7 @@ namespace stage_2_final_project_tgbooks_backend
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = "10GO's books backend",
-                        ValidAudiences = new[] { "10GO-Android-App", "10GO-iOS-App" },
+                        ValidAudiences = new[] { "10GO-Android-App", "10GO-iOS-App", "10GO-Web-App" },
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
 
                     };

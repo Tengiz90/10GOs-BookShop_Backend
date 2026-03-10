@@ -3,6 +3,7 @@
     public enum Client
     {
         Android,
-        iOS
+        iOS,
+        Web
     }
 }

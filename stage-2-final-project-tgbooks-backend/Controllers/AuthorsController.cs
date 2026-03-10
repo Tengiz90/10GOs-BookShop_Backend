@@ -18,24 +18,19 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         }
 
 
-        [HttpGet("get-authors")]
+        [HttpGet("get-all")]
         public async Task<ActionResult<ApiResponse<ICollection<GetAuthor>?>>> GetAuthors()
         {
             try
             {
-                var authors = (await _aurthorsService.GetAuthorsAsync()).Select(
-                    au => new GetAuthor
-                    {
-                        Id = au.Id,
-                        Name = au.Name,
-                    }).ToList();
+                var authors = await _aurthorsService.GetAuthorsAsync();
                 var response = new ApiResponse<ICollection<GetAuthor>?> { Message = "Authors retrieval was successful", Data = authors, WasSuccessful = true };
                 return Ok(response);
             }
             catch (Exception ex)
             {
                 {
-                    var errorResponse = new ApiResponse<GetAuthor?>
+                    var errorResponse = new ApiResponse<ICollection<GetAuthor>?>
                     {
                         WasSuccessful = false,
                         Message = $"Failed to retrieve authors: {ex.Message}",

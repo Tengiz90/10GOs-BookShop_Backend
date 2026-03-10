@@ -72,7 +72,7 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Orders = user.Orders.Select(o => new GetOrder
+                Orders = user.Orders.Select(o => new GetUserOrder
                 {
                     Id = o.Id,
                     OrderDate = o.CreatedAt,
@@ -183,6 +183,7 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
             {
                 Client.Android => "10GO-Android-App",
                 Client.iOS => "10GO-iOS-App",
+                Client.Web => "10GO-Web-App",
                 _ => throw new ArgumentException("Invalid client")
             };
 

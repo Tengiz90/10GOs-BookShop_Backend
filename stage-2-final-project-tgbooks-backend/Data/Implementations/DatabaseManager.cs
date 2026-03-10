@@ -313,5 +313,10 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             return !exists;
         }
 
+        public async Task<ICollection<Order>> GetAllOrdersSortedbyDateFromLatestToOldest()
+        {
+           return await _db.Orders.ToListAsync();
+        }
+
     }
 }
