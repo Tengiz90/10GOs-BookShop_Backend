@@ -36,8 +36,20 @@ namespace stage_2_final_project_tgbooks_backend
             builder.Services.AddScoped<IBookService, BookService>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IAuthorService, AuthorService>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddSingleton<IStorageService, BlobService>();
             builder.Services.AddSingleton<IEmailSender, EmailSender>();
+
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
 
             // register all validators in the assembly
             builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
@@ -123,9 +135,7 @@ namespace stage_2_final_project_tgbooks_backend
             builder.Services.AddHostedService<UnverifiedUserCleanupService>();
 
             var app = builder.Build();
-            app.Urls.Clear();
-            app.Urls.Add("http://0.0.0.0:5001");
-
+  
 
             // 4. Configure Middleware Order (CRITICAL)
             if (app.Environment.IsDevelopment())
@@ -136,12 +146,12 @@ namespace stage_2_final_project_tgbooks_backend
 
             app.UseHttpsRedirection();
 
+            app.UseCors("AllowAll");
             // Authentication MUST come before Authorization and MapControllers
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();
-            app.Urls.Add("http://0.0.0.0:5000");
             app.Run();
         }
     }
