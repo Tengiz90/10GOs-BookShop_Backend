@@ -26,7 +26,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         {
             try
             {
-                var orders = await _orderService.GetAllOrdersSortedbyDateFromLatestToOldest();
+                var orders = await _orderService.GetAllOrdersSortedbyDateFromLatestToOldestAsync();
 
                 var response = new ApiResponse<ICollection<GetOrderWithDetails>?> { Message = "Oders retrieval was successful", Data = orders, WasSuccessful = true };
                 return Ok(response);
@@ -47,12 +47,12 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         }
 
         [Authorize]
-        [HttpGet("get-by_user")]
+        [HttpGet("get-by-user")]
         public async Task<ActionResult<ApiResponse<ICollection<GetOrderWithDetails>?>>> GetOrdersByUserId(int userId)
         {
             try
             {
-                var orders = await _orderService.GetOrdersByUserId(userId);
+                var orders = await _orderService.GetOrdersByUserIdAsync(userId);
 
                 var response = new ApiResponse<ICollection<GetOrderWithDetails>?> { Message = "Oders retrieval was successful", Data = orders, WasSuccessful = true };
                 return Ok(response);

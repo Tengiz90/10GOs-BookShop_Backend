@@ -34,12 +34,13 @@ namespace stage_2_final_project_tgbooks_backend.Data.Interfaces
         Task<ICollection<Author>> GetAuthorsAsync();
         Task<ICollection<Book>> GetBooksByAuthorIdAsync(int authorId);
 
-        Task<ICollection<User>> GetAllUsers();
+        Task<ICollection<User>> GetAllUsersAsync();
 
         Task<bool> IsVerificationCodeUniqueForEmailAsync(string code, string email);
 
-        Task<ICollection<Order>> GetAllOrdersSortedbyDateFromLatestToOldest();
-        Task<ICollection<Order>> GetOrdersByUserId(int userId);
+        Task<ICollection<Order>> GetAllOrdersSortedbyDateFromLatestToOldestAsync();
+        Task<ICollection<Order>> GetOrdersByUserIdAsync(int userId);
+        Task UpdateBillingAddressByUserIdAsync(int userId, Address updatedAddress);
 
 
     }

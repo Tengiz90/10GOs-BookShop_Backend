@@ -15,10 +15,10 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
             _databaseManager = databaseManager;
         }
 
-        public async Task<ICollection<GetOrderWithDetails>> GetAllOrdersSortedbyDateFromLatestToOldest()
+        public async Task<ICollection<GetOrderWithDetails>> GetAllOrdersSortedbyDateFromLatestToOldestAsync()
         {
 
-            var orders = await _databaseManager.GetAllOrdersSortedbyDateFromLatestToOldest();
+            var orders = await _databaseManager.GetAllOrdersSortedbyDateFromLatestToOldestAsync();
             return orders.Select(
                  or => new GetOrderWithDetails
                  {
@@ -46,9 +46,9 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
                
         }
 
-        public async Task<ICollection<GetOrderWithDetails>> GetOrdersByUserId(int userId)
+        public async Task<ICollection<GetOrderWithDetails>> GetOrdersByUserIdAsync(int userId)
         {
-            var orders = await _databaseManager.GetOrdersByUserId(userId);
+            var orders = await _databaseManager.GetOrdersByUserIdAsync(userId);
             return orders.Select(
               or => new GetOrderWithDetails
               {

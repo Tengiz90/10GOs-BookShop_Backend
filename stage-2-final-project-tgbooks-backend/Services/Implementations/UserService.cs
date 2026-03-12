@@ -116,6 +116,18 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
             return new EditUserNameResult { FirstName = nameResult.FirstName, LastName =nameResult.LastName, UserId = nameResult.Id };
         }
 
+        public async Task UpdateBillingAddressByUserIdAsync(UpdateBillingAddress updatedAddress)
+        {
+          await  _databaseManager.UpdateBillingAddressByUserIdAsync(updatedAddress.UserId, 
+                new Address { 
+                    Address1 = updatedAddress.Address1, 
+                   Address2 = updatedAddress.Address2,
+                   City = updatedAddress.City,
+                   PostalCode = updatedAddress.PostalCode,
+                    } 
+              );
+        }
+
         public async Task<bool> IsVerificationCodeUniqueForEmailAsync(string code, string email)
         {
             if (string.IsNullOrWhiteSpace(code))
@@ -199,6 +211,6 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-      
+    
     }
 }

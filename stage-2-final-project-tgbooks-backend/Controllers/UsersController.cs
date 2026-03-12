@@ -221,5 +221,28 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             }
         }
 
+        [Authorize]
+        [HttpPut("edit-billing-adress")]
+        public async Task<ActionResult<ApiResponse>> EditBillingAddressOfUser(UpdateBillingAddress requestInfo)
+        {
+            try
+            {
+                await _userService.UpdateBillingAddressByUserIdAsync(requestInfo);
+                var response = new ApiResponse { Message = "Billing address updated successfully", WasSuccessful = true };
+                return Ok(response);
+            }
+            catch (EntityNotFoundException ex)
+            {
+                var userNotFoundResponse = new ApiResponse { WasSuccessful = false, Message = ex.Message };
+                return NotFound(userNotFoundResponse);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new ApiResponse {  WasSuccessful = false, Message = "Coukd not update billing address: " + ex.Message };
+                return StatusCode(500, errorResponse);
+            }
+
+        }
+
     }
 }

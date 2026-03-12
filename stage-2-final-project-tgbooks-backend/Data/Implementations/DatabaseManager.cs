@@ -303,7 +303,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             return books;
         }
 
-        public async Task<ICollection<User>> GetAllUsers()
+        public async Task<ICollection<User>> GetAllUsersAsync()
         {
             return await _db.Users.ToListAsync();
         }
@@ -319,7 +319,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             return !exists;
         }
 
-        public async Task<ICollection<Order>> GetAllOrdersSortedbyDateFromLatestToOldest()
+        public async Task<ICollection<Order>> GetAllOrdersSortedbyDateFromLatestToOldestAsync()
         {
            return await _db.Orders
                 .OrderByDescending(o => o.CreatedAt)
@@ -330,7 +330,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                 .ToListAsync();
         }
 
-        public async Task<ICollection<Order>> GetOrdersByUserId(int userId)
+        public async Task<ICollection<Order>> GetOrdersByUserIdAsync(int userId)
         {
             var userExists = await _db.Users.AnyAsync(u => u.Id == userId);
 
@@ -346,6 +346,29 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                 .Include(o => o.Items)   
                 .ThenInclude(oi => oi.Book) 
                 .ToListAsync();
+        }
+
+        public async Task UpdateBillingAddressByUserIdAsync(int userId, Address updatedAddress)
+        {
+            
+            var user = await _db.Users
+                .Include(u => u.Address) 
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+            {
+                throw new EntityNotFoundException("User", userId);
+            }
+                user.Address.Address1 = updatedAddress.Address1;
+                user.Address.Address2 = updatedAddress.Address2;
+                user.Address.City = updatedAddress.City;
+                user.Address.PostalCode = updatedAddress.PostalCode;
+
+                _db.Users.Update(user);
+            
+
+        
+            await _db.SaveChangesAsync();
         }
 
     }
