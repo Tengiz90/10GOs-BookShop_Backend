@@ -14,5 +14,6 @@ namespace stage_2_final_project_tgbooks_backend.Services.Interfaces
         Task<EditUserNameResult> EditUserNameAsync(EditUserName userName);
         string GenerateJwtToken(int userId, string userEmail, Role role, Client client);
 
+
     }
 }

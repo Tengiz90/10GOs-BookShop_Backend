@@ -1,4 +1,5 @@
 ﻿
+using stage_2_final_project_tgbooks_backend.Data.Models;
 using stage_2_final_project_tgbooks_backend.Responses.Orders;
 
 namespace stage_2_final_project_tgbooks_backend.Services.Interfaces
@@ -6,5 +7,6 @@ namespace stage_2_final_project_tgbooks_backend.Services.Interfaces
     public interface IOrderService
     {
         Task<ICollection<GetOrderWithDetails>> GetAllOrdersSortedbyDateFromLatestToOldest();
+        Task<ICollection<GetOrderWithDetails>> GetOrdersByUserId(int userId);
     }
 }

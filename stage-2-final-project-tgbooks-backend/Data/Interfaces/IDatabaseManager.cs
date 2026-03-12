@@ -39,6 +39,7 @@ namespace stage_2_final_project_tgbooks_backend.Data.Interfaces
         Task<bool> IsVerificationCodeUniqueForEmailAsync(string code, string email);
 
         Task<ICollection<Order>> GetAllOrdersSortedbyDateFromLatestToOldest();
+        Task<ICollection<Order>> GetOrdersByUserId(int userId);
 
 
     }

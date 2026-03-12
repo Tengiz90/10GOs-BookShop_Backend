@@ -189,7 +189,13 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
 
         public async Task<User> GetUserByEmailAndPasswordAsync(string email, string password)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _db.Users
+                .Include(u => u.Orders)
+                .ThenInclude(o => o.Items)
+                .ThenInclude(oi => oi.Book)
+                .FirstOrDefaultAsync(u => u.Email == email);
+                
+
             if (user == null) throw new EntityNotFoundException(nameof(User), email);
 
             // Use BCrypt to verify password
@@ -315,7 +321,31 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
 
         public async Task<ICollection<Order>> GetAllOrdersSortedbyDateFromLatestToOldest()
         {
-           return await _db.Orders.ToListAsync();
+           return await _db.Orders
+                .OrderByDescending(o => o.CreatedAt)
+                .Include(o => o.User)
+                .ThenInclude(u => u.Address)
+                .Include(o => o.Items)      
+                .ThenInclude(oi => oi.Book)
+                .ToListAsync();
+        }
+
+        public async Task<ICollection<Order>> GetOrdersByUserId(int userId)
+        {
+            var userExists = await _db.Users.AnyAsync(u => u.Id == userId);
+
+            if (!userExists)
+            {
+                throw new EntityNotFoundException("User", userId);
+            }
+
+            return await _db.Orders
+                .Where(o => o.UserId == userId)
+                .Include(o => o.User)   
+                .ThenInclude(u => u.Address)
+                .Include(o => o.Items)   
+                .ThenInclude(oi => oi.Book) 
+                .ToListAsync();
         }
 
     }
