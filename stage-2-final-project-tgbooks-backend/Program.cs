@@ -138,11 +138,10 @@ namespace stage_2_final_project_tgbooks_backend
   
 
             // 4. Configure Middleware Order (CRITICAL)
-            if (app.Environment.IsDevelopment())
-            {
+            //if (app.Environment.IsDevelopment()){
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }
+            //}
 
             app.UseHttpsRedirection();
 
