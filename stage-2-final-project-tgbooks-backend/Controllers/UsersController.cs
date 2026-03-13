@@ -165,6 +165,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                     Email = userInfo.Email,
                     FirstName = userInfo.FirstName,
                     LastName = userInfo.LastName,
+                    role = userInfo.Role,
                     Id = userInfo.Id,
                     JwtToken = jwtToken,
                     Orders = userInfo.Orders,
