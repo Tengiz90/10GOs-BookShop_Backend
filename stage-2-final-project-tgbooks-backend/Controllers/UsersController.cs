@@ -246,7 +246,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
         }
 
-
+        [Authorize(Roles = "Customer")]
         [HttpGet("cart")]
         public async Task<ActionResult<ApiResponse<ICollection<GetCartItem>?>>> GetAllCartItems(int userId)
         {
@@ -268,6 +268,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             }
         }
 
+        [Authorize(Roles = "Customer")]
         [HttpPost("cart")]
         public async Task<ActionResult<GetCartItem?>> AddToCart(AddCartItem addCartItem)
         {
@@ -303,6 +304,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             }
         }
 
+        [Authorize(Roles = "Customer")]
         [HttpDelete("cart")]
         public async Task<ActionResult<ApiResponse<int?>>> RemoveCartItem(RemoveCartItem removeCartItem)
         {
@@ -323,6 +325,8 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                 return StatusCode(500, errorResponse);
             }
         }
+
+        [Authorize(Roles = "Customer")]
         [HttpPut("cart")]
         public async Task<ActionResult<GetCartItem?>> ChangeCartItemAmount(ChangeCartItemQuantity changeCartItemQuantity)
         {
