@@ -211,6 +211,48 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-    
+        public async Task<ICollection<GetCartItem>> GetUserCartByUserIdAsync(int userId)
+        {
+            var cart = await _databaseManager.GetUserCartByUserIdAsync(userId);
+            return cart.Items.Select( item => new GetCartItem
+            {
+                Id = item.Id,
+                BookId = item.BookId,
+                ImageURL = item.Book.ImageURL,
+                Language = item.Book.Language,
+                Quantity = item.Quantity,
+            }).ToList();
+        }
+
+        public async Task<GetCartItem> AddItemToCartAsync(AddCartItem addCartItem)
+        {
+            var cartItem = await _databaseManager.AddItemToCartAsync(addCartItem.BookId, addCartItem.UserId);
+            return new GetCartItem { 
+                BookId = cartItem.BookId,
+                ImageURL = cartItem.Book.ImageURL,
+                Language = cartItem.Book.Language,
+                Id = cartItem.Id,
+                Quantity = cartItem.Quantity,
+                Title = cartItem.Book.Title,
+            };
+        }
+
+        public async Task<int> RemoveItemFromCartAsync(int cartItemId, int userId)
+        {
+            return await _databaseManager.RemoveItemFromCartAsync(cartItemId, userId);
+        }
+
+        public async Task<GetCartItem> ChangeCartItemQuantityAsync(int cartItemId, int quantity, int userId)
+        {
+               var cartItem = await _databaseManager.ChangeCartItemQuantityAsync(cartItemId, quantity ,userId);
+            return new GetCartItem { 
+                BookId = cartItem.BookId,
+                ImageURL = cartItem.Book.ImageURL,
+                Language = cartItem.Book.Language,
+                Id = cartItem.Id,
+                Quantity = cartItem.Quantity,
+                Title = cartItem.Book.Title,
+            };
+        }
     }
 }

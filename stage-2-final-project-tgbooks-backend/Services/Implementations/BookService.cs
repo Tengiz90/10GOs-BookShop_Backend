@@ -83,13 +83,19 @@ namespace WebApplication2.Services
             };
         }
 
-        public async Task<GetBook> GetBookByIdAsync(int id)
+        public async Task<GetBook> GetBookByIdAsync(int id, int? userId)
         {
 
             var book = await _databaseManager.GetBookByIdAsync(id);
-            return new GetBook
+            ICollection<int> cartBookIds = new List<int> { };
+            if (userId != null)
+            {
+                cartBookIds = await _databaseManager.GetUserCartBookIdsAsync(userId.Value);
+            }
+                return new GetBook
             {
                 Id = id,
+                alreadyInCart = cartBookIds.Contains(book.Id),
                 Authors = book.Authors.Select(au => new GetAuthor
                 {
                     Id = au.Id,
@@ -102,12 +108,18 @@ namespace WebApplication2.Services
             };
         }
 
-        public async Task<ICollection<GetBook>> GetBooksByCategoryAsync(int categoryId)
+        public async Task<ICollection<GetBook>> GetBooksByCategoryAsync(int categoryId, int? userId)
         {
             var books = await _databaseManager.GetBooksByCategoryIdAsync(categoryId);
-            return books.Select(b => new GetBook
+            ICollection<int> cartBookIds = new List<int> { };
+            if (userId != null)
+            {
+                cartBookIds = await _databaseManager.GetUserCartBookIdsAsync(userId.Value);
+            }
+                return books.Select(b => new GetBook
             {
                 Id = b.Id,
+                alreadyInCart = cartBookIds.Contains(b.Id),
                 Authors = b.Authors.Select(au => new GetAuthor
                 {
                     Id = au.Id,
@@ -122,12 +134,18 @@ namespace WebApplication2.Services
         }
 
 
-        public async Task<ICollection<GetBook>> GetBooksByCategorySortedAsync(int categoryId)
+        public async Task<ICollection<GetBook>> GetBooksByCategorySortedAsync(int categoryId, int? userId)
         {
             var books = await _databaseManager.GetBooksByCategoryIdSortedByTitleAsync(categoryId);
-            return books.Select(b => new GetBook
+            ICollection<int> cartBookIds = new List<int> { };
+            if (userId != null)
+            {
+                cartBookIds = await _databaseManager.GetUserCartBookIdsAsync(userId.Value);
+            }
+                return books.Select(b => new GetBook
             {
                 Id = b.Id,
+                alreadyInCart = cartBookIds.Contains(b.Id),
                 Authors = b.Authors.Select(au => new GetAuthor
                 {
                     Id = au.Id,
@@ -140,12 +158,18 @@ namespace WebApplication2.Services
             }
             ).ToList();
         }
-        public async Task<ICollection<GetBook>> GetBooksByAuthorAsync(int authorId)
+        public async Task<ICollection<GetBook>> GetBooksByAuthorAsync(int authorId, int? userId)
         {
             var books = await _databaseManager.GetBooksByAuthorIdAsync(authorId);
-            return books.Select(b => new GetBook
+            ICollection<int> cartBookIds = new List<int> { };
+            if (userId != null)
+            {
+                cartBookIds = await _databaseManager.GetUserCartBookIdsAsync(userId.Value);
+            }
+                return books.Select(b => new GetBook
             {
                 Id = b.Id,
+                alreadyInCart = cartBookIds.Contains(b.Id),
                 Authors = b.Authors.Select(au => new GetAuthor
                 {
                     Id = au.Id,
@@ -160,13 +184,19 @@ namespace WebApplication2.Services
         }
 
 
-        public async Task<ICollection<GetBook>> GetBooksPageAsync(string? title, int pageNumber, int pageSize)
+        public async Task<ICollection<GetBook>> GetBooksPageAsync(string? title, int pageNumber, int pageSize, int? userId)
         {
             var books = await _databaseManager.GetBooksPageAsync(title, pageNumber, pageSize);
-            return books.Select(b => new GetBook
+            ICollection<int> cartBookIds = new List<int> { };
+            if (userId != null)
+            {
+                cartBookIds = await _databaseManager.GetUserCartBookIdsAsync(userId.Value);
+            }
+                return books.Select(b => new GetBook
             {
                 Id = b.Id,
                 ImageURL = b.ImageURL,
+                alreadyInCart = cartBookIds.Contains(b.Id),
                 Authors = b.Authors.Select(au => new GetAuthor
                 {
                     Id = au.Id,
@@ -178,7 +208,7 @@ namespace WebApplication2.Services
             }).ToList();
         }
 
-  
+
         public async Task<RemoveBookByIdResult> RemoveBookAsync(int id)
         {
             return new RemoveBookByIdResult

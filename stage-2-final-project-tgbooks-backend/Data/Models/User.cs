@@ -20,5 +20,8 @@ namespace stage_2_final_project_tgbooks_backend.Data.Models
 
         // 1 → 1
         public Address Address { get; set; } = null!;
+
+        // 1 → 1
+        public Cart Cart { get; set; }
     }
 }

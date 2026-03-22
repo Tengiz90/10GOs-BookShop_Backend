@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using stage_2_final_project_tgbooks_backend.Core.Exceptions;
+using stage_2_final_project_tgbooks_backend.Data.Models;
 using stage_2_final_project_tgbooks_backend.Helpers;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Books;
 using stage_2_final_project_tgbooks_backend.Responses;
@@ -42,9 +43,22 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         {
             try
             {
+                int? userId = null;
+
+                if (User.Identity?.IsAuthenticated == true)
+                {
+                    var idClaim = User.FindFirst("id");
+
+                    if (idClaim != null && int.TryParse(idClaim.Value, out var parsedId))
+                    {
+                        userId = parsedId;
+                    }
+                }
+
+
                 var books = sorted
-                  ? await _bookService.GetBooksByCategorySortedAsync(categoryId)
-                  : await _bookService.GetBooksByCategoryAsync(categoryId);
+                  ? await _bookService.GetBooksByCategorySortedAsync(categoryId, userId)
+                  : await _bookService.GetBooksByCategoryAsync(categoryId, userId);
 
                 var response = new ApiResponse<ICollection<GetBook>?>
                 {
@@ -74,7 +88,20 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         {
             try
             {
-                var book = await _bookService.GetBookByIdAsync(id);
+                int? userId = null;
+
+                if (User.Identity?.IsAuthenticated == true)
+                {
+                    var idClaim = User.FindFirst("id");
+
+                    if (idClaim != null && int.TryParse(idClaim.Value, out var parsedId))
+                    {
+                        userId = parsedId;
+                    }
+                }
+
+
+                var book = await _bookService.GetBookByIdAsync(id, userId);
 
                 var response = new ApiResponse<GetBook?>
                 {
@@ -109,6 +136,8 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             }
 
         }
+       
+
         [HttpGet("page")]
         public async Task<ActionResult<ApiResponse<ICollection<GetBook>?>>> GetBooksPage(
          [FromQuery] string? title, // optional search
@@ -117,7 +146,19 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         {
             try
             {
-                var books = await _bookService.GetBooksPageAsync(title, pageNumber, pageSize);
+                int? userId = null;
+
+                if (User.Identity?.IsAuthenticated == true)
+                {
+                    var idClaim = User.FindFirst("id");
+
+                    if (idClaim != null && int.TryParse(idClaim.Value, out var parsedId))
+                    {
+                        userId = parsedId;
+                    }
+                }
+
+                var books = await _bookService.GetBooksPageAsync(title, pageNumber, pageSize, userId);
                 var response = new ApiResponse<ICollection<GetBook>?>
                 {
                     WasSuccessful = true,
@@ -139,7 +180,6 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                 return StatusCode(500, errorResponse);
             }
         }
-
 
         [Authorize (Roles = "Admin")]
         [HttpPut("edit")]
@@ -252,9 +292,21 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         public async Task<ActionResult<ApiResponse<ICollection<GetBook>?>>> GetBooksByAuthor(
             int authorId)
         {
+            int? userId = null;
+
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var idClaim = User.FindFirst("id");
+
+                if (idClaim != null && int.TryParse(idClaim.Value, out var parsedId))
+                {
+                    userId = parsedId;
+                }
+            }
+
             try
             {
-                var books = await _bookService.GetBooksByAuthorAsync(authorId);
+                var books = await _bookService.GetBooksByAuthorAsync(authorId, userId);
 
                 var response = new ApiResponse<ICollection<GetBook>?>
                 {

@@ -1,6 +1,6 @@
 ﻿
 using stage_2_final_project_tgbooks_backend.Data.Models;
-using stage_2_final_project_tgbooks_backend.Responses.Orders;
+using stage_2_final_project_tgbooks_backend.Responses.Models.Orders;
 
 namespace stage_2_final_project_tgbooks_backend.Services.Interfaces
 {

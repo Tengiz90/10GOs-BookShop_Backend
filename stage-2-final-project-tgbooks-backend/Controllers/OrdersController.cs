@@ -5,7 +5,7 @@ using stage_2_final_project_tgbooks_backend.Core.Exceptions;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Authors;
 using stage_2_final_project_tgbooks_backend.Responses;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Books;
-using stage_2_final_project_tgbooks_backend.Responses.Orders;
+using stage_2_final_project_tgbooks_backend.Responses.Models.Orders;
 using stage_2_final_project_tgbooks_backend.Services.Interfaces;
 
 namespace stage_2_final_project_tgbooks_backend.Controllers

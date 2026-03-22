@@ -27,8 +27,4 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.4" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="Responses\Models\Books\GetBook.cs" />
-  </ItemGroup>
-
 </Project>

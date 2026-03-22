@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using stage_2_final_project_tgbooks_backend.Core.Exceptions;
 using stage_2_final_project_tgbooks_backend.Helpers;
@@ -217,7 +218,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             }
             catch (Exception ex)
             {
-                var errorResponse = new ApiResponse<EditUserNameResult?> { Data = null, WasSuccessful = false, Message = "Coukd not edit user name: " + ex.Message };
+                var errorResponse = new ApiResponse<EditUserNameResult?> { Data = null, WasSuccessful = false, Message = "Could not edit user name: " + ex.Message };
                 return StatusCode(500, errorResponse);
             }
         }
@@ -234,16 +235,118 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             }
             catch (EntityNotFoundException ex)
             {
-                var userNotFoundResponse = new ApiResponse { WasSuccessful = false, Message = ex.Message };
-                return NotFound(userNotFoundResponse);
+                var notFoundResponse = new ApiResponse { WasSuccessful = false, Message = ex.Message };
+                return NotFound(notFoundResponse);
             }
             catch (Exception ex)
             {
-                var errorResponse = new ApiResponse {  WasSuccessful = false, Message = "Coukd not update billing address: " + ex.Message };
+                var errorResponse = new ApiResponse {  WasSuccessful = false, Message = "Could not update billing address: " + ex.Message };
                 return StatusCode(500, errorResponse);
             }
 
         }
 
+
+        [HttpGet("cart")]
+        public async Task<ActionResult<ApiResponse<ICollection<GetCartItem>?>>> GetAllCartItems(int userId)
+        {
+            try
+            {
+                var cart = (await _userService.GetUserCartByUserIdAsync(userId)).ToList();
+                var response = new ApiResponse<ICollection<GetCartItem>?> { WasSuccessful = true, Message = "Cart retrieved successfully", Data = cart };
+                return Ok(response);
+            }
+            catch (EntityNotFoundException ex)
+            {
+                var notFoundResponse = new ApiResponse<ICollection<GetCartItem>?> { Data = null, Message = ex.Message, WasSuccessful = false };
+                return NotFound(notFoundResponse);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new ApiResponse<ICollection<GetCartItem>?> { Data = null, WasSuccessful = false, Message = "Could not get cart: " + ex.Message };
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [HttpPost("cart")]
+        public async Task<ActionResult<GetCartItem?>> AddToCart(AddCartItem addCartItem)
+        {
+            try
+            {
+                var cartItem = await _userService.AddItemToCartAsync(addCartItem);
+                var response = new ApiResponse<GetCartItem?> { WasSuccessful = true, Data = cartItem, Message = "Item added succesfully" };
+                return Ok(response);
+            }
+            catch (EntityNotFoundException ex)
+            {
+                var notFoundResponse = new ApiResponse<GetCartItem?> { Data = null, Message = ex.Message, WasSuccessful = false };
+                return NotFound(notFoundResponse);
+            }
+            catch (NotEnoughStockException ex)
+            {
+                var notEnoughStockResponse = new ApiResponse<GetCartItem?> { Data = null, Message = ex.Message, WasSuccessful = false };
+                return BadRequest(notEnoughStockResponse);
+            }
+            catch (AlreadyInCartException ex)
+            {
+                var alreadyInCartExceptionResponse = new ApiResponse<GetCartItem?> { Data = null, Message = ex.Message, WasSuccessful = false };
+                return BadRequest(alreadyInCartExceptionResponse);
+            }
+            catch (CartIsFullException ex)
+            {
+                var cartIsFullExceptionResponse = new ApiResponse<GetCartItem?> { Data = null, Message = ex.Message, WasSuccessful = false };
+                return BadRequest(cartIsFullExceptionResponse);
+            } catch (Exception ex)
+            {
+                var errorResponse = new ApiResponse<GetCartItem?> { Data = null, WasSuccessful = false, Message = "Could not add item to cart: " + ex.Message };
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [HttpDelete("cart")]
+        public async Task<ActionResult<ApiResponse<int?>>> RemoveCartItem(RemoveCartItem removeCartItem)
+        {
+            try
+            {
+                var removedCartItemId = await _userService.RemoveItemFromCartAsync(removeCartItem.CartItemId, removeCartItem.UserId);
+                var response = new ApiResponse<int?> { WasSuccessful = true, Message = "Item was removed successfully"};
+                return Ok(response);
+            }
+            catch (EntityNotFoundException ex)
+            {
+                var notFoundResponse = new ApiResponse<int?> { Data = null, Message = ex.Message, WasSuccessful = false };
+                return NotFound(notFoundResponse);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new ApiResponse<int?> { Data = null, WasSuccessful = false, Message = "Could not remove cart item: " + ex.Message };
+                return StatusCode(500, errorResponse);
+            }
+        }
+        [HttpPut("cart")]
+        public async Task<ActionResult<GetCartItem?>> ChangeCartItemAmount(ChangeCartItemQuantity changeCartItemQuantity)
+        {
+            try
+            {
+                var updatedCartItem = await _userService.ChangeCartItemQuantityAsync(changeCartItemQuantity.CartItemId, changeCartItemQuantity.Quantity, changeCartItemQuantity.UserId);
+                var reponse = new ApiResponse<GetCartItem?> { Data = updatedCartItem, Message = "Cart item updated successfully", WasSuccessful = true };
+                return Ok(reponse);
+            }
+            catch (EntityNotFoundException ex)
+            {
+                var notFoundResponse = new ApiResponse<GetCartItem?> { Data = null, Message = ex.Message, WasSuccessful = false };
+                return NotFound(notFoundResponse);
+            }
+            catch (NotEnoughStockException ex)
+            {
+                var notEnoughStockResponse = new ApiResponse<GetCartItem?> { Data = null, Message = ex.Message, WasSuccessful = false };
+                return BadRequest(notEnoughStockResponse);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new ApiResponse<GetCartItem?> { Data = null, WasSuccessful = false, Message = "Could not remove cart item: " + ex.Message };
+                return StatusCode(500, errorResponse);
+            }
+        }
     }
 }

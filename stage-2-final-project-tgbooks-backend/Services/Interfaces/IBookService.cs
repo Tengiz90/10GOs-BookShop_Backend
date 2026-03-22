@@ -15,12 +15,13 @@ namespace WebApplication2.Services.Interfaces
         Task<EditBookResult> EditBookAsync(EditBookDto request);
         Task<RemoveBookByIdResult> RemoveBookAsync(int id);
 
-        Task<GetBook> GetBookByIdAsync(int id);
-        Task<ICollection<GetBook>> GetBooksByCategoryAsync(int categoryId);
-        Task<ICollection<GetBook>> GetBooksByCategorySortedAsync(int categoryId);
-        Task<ICollection<GetBook>> GetBooksByAuthorAsync(int authorId);
-        Task<ICollection<GetBook>> GetBooksPageAsync(string? title, int pageNumber, int pageSize);
- 
+        Task<GetBook> GetBookByIdAsync(int id, int? userId);
+        Task<ICollection<GetBook>> GetBooksByCategoryAsync(int categoryId, int? userId);
+        Task<ICollection<GetBook>> GetBooksByCategorySortedAsync(int categoryId, int? userId);
+        Task<ICollection<GetBook>> GetBooksByAuthorAsync(int authorId, int? userId);
+        Task<ICollection<GetBook>> GetBooksPageAsync(string? title, int pageNumber, int pageSize, int? userId);
+
+
 
     }
 }

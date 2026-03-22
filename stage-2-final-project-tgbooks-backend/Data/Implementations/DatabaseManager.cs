@@ -15,7 +15,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             _db = db;
         }
 
-       
+
         public async Task<int> AddNewBookAsync(Book book)
         {
 
@@ -66,9 +66,9 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                     foundBook.Categories.Add(trackedCategory);
             }
 
-                await _db.SaveChangesAsync();
-                return updatedBook.Id;
-           
+            await _db.SaveChangesAsync();
+            return updatedBook.Id;
+
         }
 
         public async Task<Book> GetBookByIdAsync(int id)
@@ -81,9 +81,9 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             {
                 throw new EntityNotFoundException(nameof(Book), id);
             }
-            return  book;
-           
-            
+            return book;
+
+
         }
 
         public async Task<ICollection<Book>> GetBooksByCategoryIdAsync(int id)
@@ -181,7 +181,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
 
         public async Task<User> GetUserByEmailAsync(string email)
         {
-            var user =  await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Email == email);
             if (user == null) throw new EntityNotFoundException(nameof(User), email);
 
             else return user;
@@ -194,7 +194,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                 .ThenInclude(o => o.Items)
                 .ThenInclude(oi => oi.Book)
                 .FirstOrDefaultAsync(u => u.Email == email);
-                
+
 
             if (user == null) throw new EntityNotFoundException(nameof(User), email);
 
@@ -239,7 +239,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                 .Select(u => (bool)u.IsVerified)
                 .FirstOrDefaultAsync();
 
-     
+
             return isVerified;
         }
         public async Task<Order> PurchaseBooksByIdsAsync(ICollection<int> bookIds, ICollection<int> quantitiesToPurchaseEach, int userId)
@@ -285,7 +285,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             // Persist both stock updates and the new order
             await _db.SaveChangesAsync();
             return order;
-       
+
         }
 
         public async Task<ICollection<Author>> GetAuthorsAsync()
@@ -321,13 +321,13 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
 
         public async Task<ICollection<Order>> GetAllOrdersSortedbyDateFromLatestToOldestAsync()
         {
-           return await _db.Orders
-                .OrderByDescending(o => o.CreatedAt)
-                .Include(o => o.User)
-                .ThenInclude(u => u.Address)
-                .Include(o => o.Items)      
-                .ThenInclude(oi => oi.Book)
-                .ToListAsync();
+            return await _db.Orders
+                 .OrderByDescending(o => o.CreatedAt)
+                 .Include(o => o.User)
+                 .ThenInclude(u => u.Address)
+                 .Include(o => o.Items)
+                 .ThenInclude(oi => oi.Book)
+                 .ToListAsync();
         }
 
         public async Task<ICollection<Order>> GetOrdersByUserIdAsync(int userId)
@@ -341,35 +341,162 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
 
             return await _db.Orders
                 .Where(o => o.UserId == userId)
-                .Include(o => o.User)   
+                .Include(o => o.User)
                 .ThenInclude(u => u.Address)
-                .Include(o => o.Items)   
-                .ThenInclude(oi => oi.Book) 
+                .Include(o => o.Items)
+                .ThenInclude(oi => oi.Book)
                 .ToListAsync();
         }
 
         public async Task UpdateBillingAddressByUserIdAsync(int userId, Address updatedAddress)
         {
-            
+
             var user = await _db.Users
-                .Include(u => u.Address) 
+                .Include(u => u.Address)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
             {
                 throw new EntityNotFoundException("User", userId);
             }
-                user.Address.Address1 = updatedAddress.Address1;
-                user.Address.Address2 = updatedAddress.Address2;
-                user.Address.City = updatedAddress.City;
-                user.Address.PostalCode = updatedAddress.PostalCode;
+            user.Address.Address1 = updatedAddress.Address1;
+            user.Address.Address2 = updatedAddress.Address2;
+            user.Address.City = updatedAddress.City;
+            user.Address.PostalCode = updatedAddress.PostalCode;
 
-                _db.Users.Update(user);
-            
+            _db.Users.Update(user);
 
-        
+
+
             await _db.SaveChangesAsync();
         }
 
+        public async Task<Cart> GetUserCartByUserIdAsync(int userId)
+        {
+            var user = await _db.Users
+            .Include(u => u.Cart)
+            .ThenInclude(c => c.Items)
+            .ThenInclude(ci => ci.Book)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                throw new EntityNotFoundException(nameof(User), userId);
+
+            return user.Cart;
+        }
+
+        public async Task<CartItem> AddItemToCartAsync(int bookId, int userId)
+        {
+            var user = await _db.Users
+                .Include(u => u.Cart)
+                .ThenInclude(c => c.Items)
+                .ThenInclude(ci => ci.Book)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                throw new EntityNotFoundException(nameof(User), userId);
+
+           
+            var book = await _db.Books.FirstOrDefaultAsync(b => b.Id == bookId);
+
+            if (book == null)
+                throw new EntityNotFoundException(nameof(Book), bookId);
+
+            if (book.Quantity <= 0)
+                throw new NotEnoughStockException(book.Title, book.Language.ToString(), 0, true);
+
+            var existingItem = user.Cart.Items
+                .FirstOrDefault(ci => ci.BookId == bookId);
+
+            if (existingItem != null)
+                throw new AlreadyInCartException("Book is already in your cart");
+
+            if (user.Cart.Items.Count >= 200)
+                throw new CartIsFullException("User cart is full.");
+
+            var cartItem = new CartItem
+            {
+                BookId = bookId,
+                CartId = user.Cart.Id,
+                Quantity = 1
+            };
+
+            user.Cart.Items.Add(cartItem);
+
+            await _db.SaveChangesAsync();
+
+            return cartItem;
+        }
+        public async Task<int> RemoveItemFromCartAsync(int cartItemId, int userId)
+        {
+            var user = await _db.Users
+             .Include(u => u.Cart)
+             .ThenInclude(c => c.Items)
+             .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                throw new EntityNotFoundException(nameof(User), userId);
+
+            var item = user.Cart.Items.FirstOrDefault(i => i.Id == cartItemId);
+            if (item == null)
+                throw new EntityNotFoundException(nameof(CartItem), cartItemId);
+
+            user.Cart.Items.Remove(item);
+
+            await _db.SaveChangesAsync();
+
+            return item.Id;
+
+        }
+
+        public async Task<CartItem> ChangeCartItemQuantityAsync(int cartItemId, int quantity, int userId)
+        {
+            if (quantity <= 0)
+                throw new ArgumentException("Quantity must be greater than 0.", nameof(quantity));
+
+            var user = await _db.Users
+                .Include(u => u.Cart)
+                .ThenInclude(c => c.Items)
+                .ThenInclude(ci => ci.Book)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                throw new EntityNotFoundException(nameof(User), userId);
+
+            var item = user.Cart.Items.FirstOrDefault(i => i.Id == cartItemId);
+            if (item == null)
+                throw new EntityNotFoundException(nameof(CartItem), cartItemId);
+
+            var book = await _db.Books.FirstOrDefaultAsync(b => b.Id == item.BookId);
+            if (book == null)
+                throw new EntityNotFoundException(nameof(Book), item.BookId);
+
+            if (quantity > book.Quantity)
+            {
+                throw new NotEnoughStockException(book.Title, book.Language.ToString(), book.Quantity, book.Quantity == 0);
+            }
+
+            item.Quantity = quantity;
+
+            await _db.SaveChangesAsync();
+
+            return item;
+        }
+
+        public async Task<ICollection<int>> GetUserCartBookIdsAsync(int userId)
+        {
+            var user = await _db.Users
+              .Include(u => u.Cart)
+              .ThenInclude(c => c.Items)
+              .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+            {
+                throw new EntityNotFoundException(nameof(User), userId);
+            }
+            var userCart = user.Cart;
+            return userCart.Items.Select(ci => ci.BookId)
+                .ToList();
+        }
     }
 }

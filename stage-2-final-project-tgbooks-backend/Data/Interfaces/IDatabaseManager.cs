@@ -41,6 +41,11 @@ namespace stage_2_final_project_tgbooks_backend.Data.Interfaces
         Task<ICollection<Order>> GetAllOrdersSortedbyDateFromLatestToOldestAsync();
         Task<ICollection<Order>> GetOrdersByUserIdAsync(int userId);
         Task UpdateBillingAddressByUserIdAsync(int userId, Address updatedAddress);
+        Task<Cart> GetUserCartByUserIdAsync(int userId);
+        Task<CartItem> AddItemToCartAsync(int bookId, int userId);
+        Task<int> RemoveItemFromCartAsync(int cartItemId, int userId);
+        Task<CartItem> ChangeCartItemQuantityAsync(int cartItemId, int quantity, int userId);
+        Task<ICollection<int>> GetUserCartBookIdsAsync(int userId);
 
 
     }
