@@ -405,6 +405,16 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             if (book.Quantity <= 0)
                 throw new NotEnoughStockException(book.Title, book.Language.ToString(), 0, true);
 
+            if (user.Cart == null)
+            {
+                user.Cart = new Cart
+                {
+                    User = user // EF will track UserId automatically
+                                // Items is already initialized to empty list
+                };
+               
+            }
+
             var existingItem = user.Cart.Items
                 .FirstOrDefault(ci => ci.BookId == bookId);
 
@@ -417,7 +427,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             var cartItem = new CartItem
             {
                 BookId = bookId,
-                CartId = user.Cart.Id,
+                Cart = user.Cart, // EF will handle CartId automatically
                 Quantity = 1
             };
 

@@ -135,11 +135,17 @@ namespace stage_2_final_project_tgbooks_backend
             builder.Services.AddHostedService<UnverifiedUserCleanupService>();
 
             var app = builder.Build();
-  
+
+            // Apply migrations automatically
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                db.Database.Migrate(); // This will apply pending migrations to Azure DB
+            }
 
             // 4. Configure Middleware Order (CRITICAL)
             //if (app.Environment.IsDevelopment()){
-                app.UseSwagger();
+            app.UseSwagger();
                 app.UseSwaggerUI();
             //}
 
