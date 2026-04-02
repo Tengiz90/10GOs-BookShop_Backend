@@ -10,7 +10,7 @@ namespace stage_2_final_project_tgbooks_backend.Data.Implementations
         {
             SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", 587);
             smtpClient.EnableSsl = true;
-            smtpClient.Credentials = new NetworkCredential("gachechiladzetengiz8@gmail.com", "qhlk dqhv ufqn xdns");
+            smtpClient.Credentials = new NetworkCredential("gachechiladzetengiz8@gmail.com", "xezs rkof tyym wkkb");
             MailMessage mail = new MailMessage();
             mail.From = new MailAddress("gachechiladzetengiz8@gmail.com");
             mail.To.Add(to);
