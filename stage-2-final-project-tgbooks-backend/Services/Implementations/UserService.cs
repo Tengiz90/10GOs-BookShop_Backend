@@ -57,7 +57,7 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
         {
             return new ConfirmEmailResult
             {
-                UserId = await _databaseManager.ConfirmUserRegistrationAsync(CapitalizeFirstLetter(confirmEmail.Email), confirmEmail.Code)
+                UserId = await _databaseManager.ConfirmUserRegistrationAsync(CapitalizeFirstLetter(confirmEmail.Email), confirmEmail.UserId, confirmEmail.Code)
             };
 
         }

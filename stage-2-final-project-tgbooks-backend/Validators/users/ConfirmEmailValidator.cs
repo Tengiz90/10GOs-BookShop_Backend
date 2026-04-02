@@ -14,6 +14,9 @@ namespace stage_2_final_project_tgbooks_backend.Validators.users
             RuleFor(em => em.Code)
                 .NotEmpty().WithMessage("Code can't be empty")
                 .Matches(@"^\d{4}$").WithMessage("Code must be exactly 4 digits");
+            RuleFor(em => em.UserId)
+            .GreaterThan(0)
+            .WithMessage("Id must be greater than 0");
         }
     }
 }

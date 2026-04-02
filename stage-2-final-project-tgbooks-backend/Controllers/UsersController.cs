@@ -129,12 +129,12 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             }
             catch (EntityNotFoundException ex)
             {
-                var notFoundResponse = new ApiResponse<ConfirmEmailResult?> { Data = null, WasSuccessful = true, Message = ex.Message };
+                var notFoundResponse = new ApiResponse<ConfirmEmailResult?> { Data = null, WasSuccessful = false, Message = ex.Message };
                 return NotFound(notFoundResponse);
             }
             catch (EmailConfirmationException ex)
             {
-                var wrongCodeResponse = new ApiResponse<ConfirmEmailResult?> { Data = null, WasSuccessful = true, Message = ex.Message };
+                var wrongCodeResponse = new ApiResponse<ConfirmEmailResult?> { Data = null, WasSuccessful = false, Message = ex.Message };
                 return BadRequest(wrongCodeResponse);
             }
             catch (Exception ex)

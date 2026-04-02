@@ -215,10 +215,10 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             return user.Id;
         }
 
-        public async Task<int> ConfirmUserRegistrationAsync(string email, string code)
+        public async Task<int> ConfirmUserRegistrationAsync(string email, int userId, string code)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
-            if (user == null) throw new EntityNotFoundException(nameof(User), email);
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId && u.Email == email);
+            if (user == null) throw new EntityNotFoundException(nameof(User), "combo: " + email + " and " + userId);
 
             if (user.EmailVerificationCode == code)
             {

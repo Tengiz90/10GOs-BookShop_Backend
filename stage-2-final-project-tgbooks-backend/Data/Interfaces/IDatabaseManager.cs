@@ -29,7 +29,7 @@ namespace stage_2_final_project_tgbooks_backend.Data.Interfaces
         Task<bool> DoesUserWithSuchEmailAlreadyExistAsync(string email);
         Task<bool> IsUserWithSuchEmailAlreadyVerifiedAsync(string email);
 
-        Task<int> ConfirmUserRegistrationAsync(string email, string code);
+        Task<int> ConfirmUserRegistrationAsync(string email, int userId, string code);
 
         Task<ICollection<Author>> GetAuthorsAsync();
         Task<ICollection<Book>> GetBooksByAuthorIdAsync(int authorId);
