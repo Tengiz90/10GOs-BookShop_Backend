@@ -18,7 +18,7 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
 
             var client = new BlobServiceClient(connection);
 
-            _container = client.GetBlobContainerClient("book-images");
+            _container = client.GetBlobContainerClient("book-covers");
             _container.CreateIfNotExists();
         }
 
