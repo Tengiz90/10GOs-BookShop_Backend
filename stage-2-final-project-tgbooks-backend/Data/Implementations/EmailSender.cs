@@ -10,7 +10,14 @@ namespace stage_2_final_project_tgbooks_backend.Data.Implementations
         {
             SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", 587);
             smtpClient.EnableSsl = true;
-            smtpClient.Credentials = new NetworkCredential("gachechiladzetengiz8@gmail.com", "xezs rkof tyym wkkb");
+            string? smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
+
+            if (string.IsNullOrEmpty(smtpPassword))
+            {
+                throw new Exception("SMTP_PASSWORD environment variable is not set.");
+            }
+
+            smtpClient.Credentials = new NetworkCredential("gachechiladzetengiz8@gmail.com", smtpPassword);
             MailMessage mail = new MailMessage();
             mail.From = new MailAddress("gachechiladzetengiz8@gmail.com");
             mail.To.Add(to);

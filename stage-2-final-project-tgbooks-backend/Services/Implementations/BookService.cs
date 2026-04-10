@@ -70,6 +70,8 @@ namespace WebApplication2.Services
             {
                 Id = request.Id,
                 Title = request.Title.Trim().ToLower(),
+                OnSale =  request.OnSale,
+                OffPercentage = request.OffPercentage,
                 Authors = authors,
                 Language = request.Language,
                 Quantity = request.Quantity,
@@ -95,7 +97,9 @@ namespace WebApplication2.Services
                 return new GetBook
             {
                 Id = id,
-                alreadyInCart = cartBookIds.Contains(book.Id),
+                OnSale = book.OnSale,
+                OffPercentage = book.OffPercentage,
+                AlreadyInCart = cartBookIds.Contains(book.Id),
                 Authors = book.Authors.Select(au => new GetAuthor
                 {
                     Id = au.Id,
@@ -119,7 +123,9 @@ namespace WebApplication2.Services
                 return books.Select(b => new GetBook
             {
                 Id = b.Id,
-                alreadyInCart = cartBookIds.Contains(b.Id),
+                OnSale = b.OnSale,
+                OffPercentage = b.OffPercentage,
+                AlreadyInCart = cartBookIds.Contains(b.Id),
                 Authors = b.Authors.Select(au => new GetAuthor
                 {
                     Id = au.Id,
@@ -145,7 +151,9 @@ namespace WebApplication2.Services
                 return books.Select(b => new GetBook
             {
                 Id = b.Id,
-                alreadyInCart = cartBookIds.Contains(b.Id),
+                OnSale = b.OnSale,
+                OffPercentage = b.OffPercentage,
+                AlreadyInCart = cartBookIds.Contains(b.Id),
                 Authors = b.Authors.Select(au => new GetAuthor
                 {
                     Id = au.Id,
@@ -169,7 +177,9 @@ namespace WebApplication2.Services
                 return books.Select(b => new GetBook
             {
                 Id = b.Id,
-                alreadyInCart = cartBookIds.Contains(b.Id),
+                OnSale = b.OnSale,
+                OffPercentage = b.OffPercentage,
+                AlreadyInCart = cartBookIds.Contains(b.Id),
                 Authors = b.Authors.Select(au => new GetAuthor
                 {
                     Id = au.Id,
@@ -196,7 +206,9 @@ namespace WebApplication2.Services
             {
                 Id = b.Id,
                 ImageURL = b.ImageURL,
-                alreadyInCart = cartBookIds.Contains(b.Id),
+                OnSale = b.OnSale,
+                OffPercentage = b.OffPercentage,
+                AlreadyInCart = cartBookIds.Contains(b.Id),
                 Authors = b.Authors.Select(au => new GetAuthor
                 {
                     Id = au.Id,
@@ -208,7 +220,31 @@ namespace WebApplication2.Services
             }).ToList();
         }
 
-
+        public async Task<ICollection<GetBook>> GetAllBooksOnSaleAsync(int? userId)
+        {
+            var books = await _databaseManager.GetAllBooksOnSaleAsync();
+            ICollection<int> cartBookIds = new List<int> { };
+            if (userId != null)
+            {
+                cartBookIds = await _databaseManager.GetUserCartBookIdsAsync(userId.Value);
+            }
+            return books.Select(b => new GetBook
+            {
+                Id = b.Id,
+                ImageURL = b.ImageURL,
+                OnSale = b.OnSale,
+                OffPercentage = b.OffPercentage,
+                AlreadyInCart = cartBookIds.Contains(b.Id),
+                Authors = b.Authors.Select(au => new GetAuthor
+                {
+                    Id = au.Id,
+                    Name = au.Name,
+                }).ToList(),
+                Language = b.Language,
+                Quantity = b.Quantity,
+                Title = b.Title,
+            }).ToList();
+        }
         public async Task<RemoveBookByIdResult> RemoveBookAsync(int id)
         {
             return new RemoveBookByIdResult

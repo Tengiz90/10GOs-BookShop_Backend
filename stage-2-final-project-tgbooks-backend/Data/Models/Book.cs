@@ -11,6 +11,8 @@ namespace stage_2_final_project_tgbooks_backend.Data.Models
         public Language Language { get; set; }
         public int Quantity { get; set; }
         public bool IsDeleted { get; set; } = false;
+        public bool OnSale { get; set; } = false;
+        public int OffPercentage {  get; set; } = 0;
 
         public string ImageURL { get; set; }
 

@@ -181,6 +181,50 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             }
         }
 
+
+        [HttpGet("get-by-on-sale")]
+        public async Task<ActionResult<ApiResponse<ICollection<GetBook>?>>> GetBooksOnSale()
+        {
+            try
+            {
+                int? userId = null;
+
+                if (User.Identity?.IsAuthenticated == true)
+                {
+                    var idClaim = User.FindFirst("id");
+
+                    if (idClaim != null && int.TryParse(idClaim.Value, out var parsedId))
+                    {
+                        userId = parsedId;
+                    }
+                }
+
+
+                var books =  await _bookService.GetAllBooksOnSaleAsync(userId);
+
+                var response = new ApiResponse<ICollection<GetBook>?>
+                {
+                    Data = books,
+                    Message = "Books retrieved successfully",
+                    WasSuccessful = true
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new ApiResponse<ICollection<GetBook>?>
+                {
+                    WasSuccessful = false,
+                    Message = $"Could not get the books: {ex.Message}",
+                    Data = null
+                };
+
+                return StatusCode(500, errorResponse);
+            }
+
+        }
+
         [Authorize (Roles = "Admin")]
         [HttpPut("edit")]
         public async Task<ActionResult<ApiResponse<EditBookResult?>>> EditBookById(EditBook book)
@@ -206,6 +250,8 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                     Id = book.Id,
                     AuthorNames = book.AuthorNames,
                     Title = book.Title,
+                    OnSale = book.OnSale,
+                    OffPercentage = book.OffPercentage,
                     CategoryIds = book.CategoryIds,
                     ImageURL = imageUrl,
                     Language = book.Language,

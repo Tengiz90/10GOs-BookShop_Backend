@@ -117,12 +117,16 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             }
 
             return await query
-                .OrderBy(b => b.Id)
+                .OrderByDescending(b => b.CreatedAt)
                 .Where(b => !b.IsDeleted)
                 .Skip((pageNumber - 1) * pageSize)
                 .Include(b => b.Authors)
                 .Take(pageSize)
                 .ToListAsync();
+        }
+        public async Task<ICollection<Book>> GetAllBooksOnSaleAsync()
+        {
+            return await _db.Books.Where (b => b.OnSale == true).ToListAsync();
         }
 
         public IQueryable<Category> GetCategories()
