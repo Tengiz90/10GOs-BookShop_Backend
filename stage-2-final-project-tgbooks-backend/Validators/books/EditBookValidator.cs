@@ -17,6 +17,8 @@ namespace stage_2_final_project_tgbooks_backend.Validators.books
 
             RuleFor(b => b.Title)
                 .NotEmpty().WithMessage("Book title can't be empty");
+            RuleFor(b => b.OffPercentage)
+                .InclusiveBetween(0, 100).WithMessage("Discount percentage must be between 0 and 100.");
         }
     }
 }
