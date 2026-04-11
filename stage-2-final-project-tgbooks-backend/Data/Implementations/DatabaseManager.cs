@@ -37,6 +37,8 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                 throw new EntityNotFoundException(nameof(Book), updatedBook.Id);
 
             foundBook.Title = updatedBook.Title;
+            foundBook.OnSale = updatedBook.OnSale;
+            foundBook.OffPercentage = updatedBook.OffPercentage;
             if (updatedBook.Quantity < 0) throw new ArgumentOutOfRangeException(nameof(updatedBook.Quantity), "Book quantity can't be negative");
             foundBook.Quantity = updatedBook.Quantity;
             foundBook.ImageURL = updatedBook.ImageURL;
