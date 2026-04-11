@@ -193,20 +193,23 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
 
         public async Task<User> GetUserByEmailAndPasswordAsync(string email, string password)
         {
-            var user = await _db.Users
+            var users = await _db.Users
                 .Include(u => u.Orders)
                 .ThenInclude(o => o.Items)
                 .ThenInclude(oi => oi.Book)
-                .FirstOrDefaultAsync(u => u.Email == email);
+                .Where(u => u.Email == email)
+                .ToListAsync();
 
+            if (!users.Any())
+                throw new EntityNotFoundException(nameof(User), email);
 
-            if (user == null) throw new EntityNotFoundException(nameof(User), email);
+            var user = users.FirstOrDefault(u =>
+                BCrypt.Net.BCrypt.Verify(password, u.PasswordHash));
 
-            // Use BCrypt to verify password
-            if (BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
-                return user;
+            if (user == null)
+                throw new AuthenticationException("Invalid email or password.");
 
-            throw new AuthenticationException("Invalid email or password.");
+            return user;
         }
 
         public async Task<int> RemoveUserByIdAsync(int id)
@@ -221,7 +224,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
 
         public async Task<int> ConfirmUserRegistrationAsync(string email, int userId, string code)
         {
-            var user = await _db.Users.OrderBy(u => u.Id).LastOrDefaultAsync(u => u.Id == userId && u.Email == email);
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId && u.Email == email);
             if (user == null) throw new EntityNotFoundException(nameof(User), email + " and " + userId);
 
             if (user.EmailVerificationCode == code)
