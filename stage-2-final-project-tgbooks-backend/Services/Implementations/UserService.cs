@@ -204,7 +204,7 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
                 issuer: "10GO's books backend",
                 audience: audience,
                 claims: claims,
-                expires: DateTime.Now.AddHours(8),
+                expires: DateTime.Now.AddHours(4),
                 signingCredentials: credentials
                 );
 

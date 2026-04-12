@@ -69,7 +69,7 @@ namespace WebApplication2.Services
             var book = new Book
             {
                 Id = request.Id,
-                Title = request.Title.Trim().ToLower(),
+                Title = request.Title.Trim(),
                 OnSale =  request.OnSale,
                 OffPercentage = request.OffPercentage,
                 Authors = authors,
