@@ -245,6 +245,27 @@ namespace WebApplication2.Services
                 Title = b.Title,
             }).ToList();
         }
+
+        public async Task<ICollection<GetBook>> GetAllDeletedBooksAsync()
+        {
+            var books = await _databaseManager.GetAllDeletedBooksAsync();
+           
+            return books.Select(b => new GetBook
+            {
+                Id = b.Id,
+                ImageURL = b.ImageURL,
+                OnSale = b.OnSale,
+                OffPercentage = b.OffPercentage,
+                Authors = b.Authors.Select(au => new GetAuthor
+                {
+                    Id = au.Id,
+                    Name = au.Name,
+                }).ToList(),
+                Language = b.Language,
+                Quantity = b.Quantity,
+                Title = b.Title,
+            }).ToList();
+        }
         public async Task<RemoveBookByIdResult> RemoveBookAsync(int id)
         {
             return new RemoveBookByIdResult
@@ -253,6 +274,11 @@ namespace WebApplication2.Services
             };
         }
 
-   
+        public async Task<int> UnDeleteBookAsync(int bookId)
+        {
+          return await _databaseManager.UnDeleteBookAsync(bookId);
+        }
+
+
     }
 }

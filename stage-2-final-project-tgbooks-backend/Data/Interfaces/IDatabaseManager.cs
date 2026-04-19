@@ -21,6 +21,7 @@ namespace stage_2_final_project_tgbooks_backend.Data.Interfaces
         Task<ICollection<Book>> GetAllBooksAsync();
         Task<ICollection<Book>> GetBooksPageAsync(string? title, int pageNumber, int pageSize);
         Task<ICollection<Book>> GetAllBooksOnSaleAsync();
+        Task<ICollection<Book>> GetAllDeletedBooksAsync();
         IQueryable<Category> GetCategories();
         Task<User> GetUserByEmailAndPasswordAsync(string email, string password);
 
@@ -47,8 +48,9 @@ namespace stage_2_final_project_tgbooks_backend.Data.Interfaces
         Task<int> RemoveItemFromCartAsync(int cartItemId, int userId);
         Task<CartItem> ChangeCartItemQuantityAsync(int cartItemId, int quantity, int userId);
         Task<ICollection<int>> GetUserCartBookIdsAsync(int userId);
-       
 
+        Task<int> UnDeleteBookAsync(int bookId);
+        
 
     }
 }

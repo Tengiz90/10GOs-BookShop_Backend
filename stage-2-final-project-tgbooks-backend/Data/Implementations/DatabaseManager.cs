@@ -131,6 +131,12 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             return await _db.Books.Where (b => b.OnSale == true).ToListAsync();
         }
 
+  
+        public async Task<ICollection<Book>> GetAllDeletedBooksAsync()
+        {
+            return await _db.Books.Where(b => b.IsDeleted == true).ToListAsync();
+        }
+
         public IQueryable<Category> GetCategories()
         {
             return _db.Categories;
@@ -516,6 +522,15 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             var userCart = user.Cart;
             return userCart.Items.Select(ci => ci.BookId)
                 .ToList();
+        }
+
+        public async Task<int> UnDeleteBookAsync(int bookId)
+        {
+           var book = await _db.Books.FirstOrDefaultAsync(b => b.Id == bookId);
+           if(book == null) throw new EntityNotFoundException(nameof(book), bookId);
+           book.IsDeleted = false; 
+           await _db.SaveChangesAsync();
+           return book.Id;
         }
     }
 }

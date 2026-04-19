@@ -412,5 +412,69 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                 return StatusCode(500, errorResponse);
             }
         }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("get-deleted")]
+        public async Task<ActionResult<ApiResponse<ICollection<GetBook>?>>> GetBooksDeletedBooks()
+        {
+
+            try 
+            { 
+                var books = await _bookService.GetAllDeletedBooksAsync();
+
+                var response = new ApiResponse<ICollection<GetBook>?>
+                {
+                    Data = books,
+                    Message = "Books retrieved successfully",
+                    WasSuccessful = true
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new ApiResponse<ICollection<GetBook>?>
+                {
+                    WasSuccessful = false,
+                    Message = $"Could not get the books: {ex.Message}",
+                    Data = null
+                };
+
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("undelete")]
+        public async Task<ActionResult<int>> UnDeleteBook(int bookId)
+        {
+            try
+            {
+                var unDeletedBookId = await _bookService.UnDeleteBookAsync(bookId);
+                var response = new ApiResponse<int?> { Data = unDeletedBookId, Message = "UnDeletion/Restoration was successful", WasSuccessful = true };
+                return Ok(response);
+            }
+            catch (EntityNotFoundException ex)
+            {
+                var notFoundResponse = new ApiResponse<int?>
+                {
+                    WasSuccessful = false,
+                    Message = ex.Message,
+                    Data = null
+                };
+                return NotFound(notFoundResponse);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new ApiResponse<int?>
+                {
+                    WasSuccessful = false,
+                    Message = $"Could not undelete the book: {ex.Message}",
+                    Data = null
+                };
+
+                return StatusCode(500, errorResponse);
+            }
+        }
     }
 }
