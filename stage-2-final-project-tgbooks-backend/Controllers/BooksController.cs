@@ -141,6 +141,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         [HttpGet("page")]
         public async Task<ActionResult<ApiResponse<ICollection<GetBook>?>>> GetBooksPage(
          [FromQuery] string? title, // optional search
+         [FromQuery] int? categoryId,  // optional filter
          [FromQuery] int pageNumber = 1,
          [FromQuery] int pageSize = 20)
         {
@@ -158,7 +159,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                     }
                 }
 
-                var books = await _bookService.GetBooksPageAsync(title, pageNumber, pageSize, userId);
+                var books = await _bookService.GetBooksPageAsync(title, categoryId, pageNumber, pageSize, userId);
                 var response = new ApiResponse<ICollection<GetBook>?>
                 {
                     WasSuccessful = true,

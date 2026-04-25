@@ -194,9 +194,9 @@ namespace WebApplication2.Services
         }
 
 
-        public async Task<ICollection<GetBook>> GetBooksPageAsync(string? title, int pageNumber, int pageSize, int? userId)
+        public async Task<ICollection<GetBook>> GetBooksPageAsync(string? title, int? categoryId, int pageNumber, int pageSize, int? userId)
         {
-            var books = await _databaseManager.GetBooksPageAsync(title, pageNumber, pageSize);
+            var books = await _databaseManager.GetBooksPageAsync(title, categoryId, pageNumber, pageSize);
             ICollection<int> cartBookIds = new List<int> { };
             if (userId != null)
             {

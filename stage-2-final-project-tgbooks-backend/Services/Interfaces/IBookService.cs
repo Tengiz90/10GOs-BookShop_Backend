@@ -19,7 +19,7 @@ namespace WebApplication2.Services.Interfaces
         Task<ICollection<GetBook>> GetBooksByCategoryAsync(int categoryId, int? userId);
         Task<ICollection<GetBook>> GetBooksByCategorySortedAsync(int categoryId, int? userId);
         Task<ICollection<GetBook>> GetBooksByAuthorAsync(int authorId, int? userId);
-        Task<ICollection<GetBook>> GetBooksPageAsync(string? title, int pageNumber, int pageSize, int? userId);
+        Task<ICollection<GetBook>> GetBooksPageAsync(string? title, int? categoryId, int pageNumber, int pageSize, int? userId);
 
         Task<ICollection<GetBook>> GetAllBooksOnSaleAsync(int? userId);
 
