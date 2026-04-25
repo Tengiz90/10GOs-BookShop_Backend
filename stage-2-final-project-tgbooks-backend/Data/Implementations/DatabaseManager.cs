@@ -133,7 +133,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
         }
         public async Task<ICollection<Book>> GetAllBooksOnSaleAsync()
         {
-            return await _db.Books.Where (b => b.OnSale == true).ToListAsync();
+            return await _db.Books.Where(b => b.OnSale == true).Include(b => b.Authors).ToListAsync();
         }
 
   
