@@ -24,6 +24,7 @@ namespace stage_2_final_project_tgbooks_backend.Data.Interfaces
         Task<ICollection<Book>> GetAllDeletedBooksAsync();
         IQueryable<Category> GetCategories();
         Task<User> GetUserByEmailAndPasswordAsync(string email, string password);
+        Task<User> GetUserBillingInfoByIdAsync(int id);
 
         Task<int> AddNewBookAsync(Book book);
         Task<int> AddUserAsync(User user);

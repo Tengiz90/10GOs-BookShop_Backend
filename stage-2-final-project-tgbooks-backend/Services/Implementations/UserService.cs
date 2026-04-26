@@ -91,6 +91,23 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
             }; 
         }
 
+        public async Task<GetUserBillingInfoResult> GetUserBillingInfoByIdAsync(int id)
+        {
+            var user = await _databaseManager.GetUserBillingInfoByIdAsync(id);
+            return new GetUserBillingInfoResult
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                // Mapping from the User's Address navigation property
+                Address1 = user.Address.Address1,
+                Address2 = user.Address.Address2 ?? string.Empty,
+                PostalCode = user.Address.PostalCode,
+                City = user.Address.City ?? string.Empty
+                // Country defaults to "Georgia" in the class definition
+            };
+
+        }
         public async Task<PurchaseBooksResult> AddOrderAsync(PurchaseBooks purchasebooks)
         {
             var order = await _databaseManager.PurchaseBooksByIdsAsync(purchasebooks.BookIds, purchasebooks.QuantitiesToPurchaseEach, purchasebooks.UserId);

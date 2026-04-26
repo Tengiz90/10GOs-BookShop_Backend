@@ -193,6 +193,43 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
         }
 
+        [HttpGet("billing-info")]
+        public async Task<ActionResult<ApiResponse<GetUserBillingInfoResult?>>> GetUserBillingInfoById(int id)
+        {
+            try
+            {
+                // Call the service which performs the DB logic and mapping
+                var result = await _userService.GetUserBillingInfoByIdAsync(id);
+
+                // Wrap the result in  common ApiResponse structure
+                return Ok(new ApiResponse<GetUserBillingInfoResult?>
+                {
+                    WasSuccessful = true,
+                    Message = "Billing info retrieved successfully",
+                    Data = result
+                });
+            }
+            catch (EntityNotFoundException ex)
+            {
+                // Handle the specific case where the user wasn't found
+                return NotFound(new ApiResponse<GetUserBillingInfoResult?>
+                {
+                    WasSuccessful = false,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                // Handle unexpected errors
+                return StatusCode(500, new ApiResponse<GetUserBillingInfoResult?>
+                {
+                    WasSuccessful = false,
+                    Message = "An unexpected error occurred: " + ex.Message
+                });
+            }
+        }
+
+
         [Authorize]
         [HttpPut("edit-name")]
         public async Task<ActionResult<ApiResponse<EditUserNameResult?>>> EditNameOfUser(EditUserName editUserName)

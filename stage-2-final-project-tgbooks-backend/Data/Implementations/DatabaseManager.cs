@@ -225,6 +225,15 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             return user;
         }
 
+        public async Task<User> GetUserBillingInfoByIdAsync(int id)
+        {
+            var user = await _db.Users
+               .Include(u => u.Address).FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null) throw new EntityNotFoundException(nameof(User), id);
+            
+            return user;
+        }
+
         public async Task<int> RemoveUserByIdAsync(int id)
         {
             var user = await _db.Users.FindAsync(id);
