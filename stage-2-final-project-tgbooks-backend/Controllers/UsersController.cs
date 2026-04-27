@@ -310,7 +310,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         }
 
         [Authorize]
-        [HttpPut("edit-billing-adress")]
+        [HttpPut("edit-billing-address")]
         public async Task<ActionResult<ApiResponse>> EditBillingAddressOfUser(UpdateBillingAddress requestInfo)
         {
             try
