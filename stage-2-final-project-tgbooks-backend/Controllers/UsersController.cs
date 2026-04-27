@@ -7,6 +7,7 @@ using stage_2_final_project_tgbooks_backend.Helpers;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Users;
 using stage_2_final_project_tgbooks_backend.Responses;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Users;
+using stage_2_final_project_tgbooks_backend.Services.AdditionalModels;
 using stage_2_final_project_tgbooks_backend.Services.Interfaces;
 
 namespace stage_2_final_project_tgbooks_backend.Controllers
@@ -39,7 +40,26 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         {
             try
             {
-                var orderInfo = await _userService.AddOrderAsync(purchaseBooks);
+                
+                var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(idClaim) || !int.TryParse(idClaim, out int userId))
+                {
+                    return Unauthorized(new ApiResponse<EditUserNameResult?>
+                    {
+                        WasSuccessful = false,
+                        Message = "Invalid or missing User ID in token."
+                    });
+                }
+
+               
+
+                var orderInfo = await _userService.AddOrderAsync(new PurchaseBooksDto {
+                    BookIds = purchaseBooks.BookIds,
+                    QuantitiesToPurchaseEach = purchaseBooks.QuantitiesToPurchaseEach,
+                    UserId = userId,
+                });
+
                 var response = new ApiResponse<PurchaseBooksResult?> { Data = orderInfo, WasSuccessful = true, Message = "Ordering was sucessfull" };
                 return Ok(response);
             }
@@ -194,12 +214,22 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         }
 
         [HttpGet("billing-info")]
-        public async Task<ActionResult<ApiResponse<GetUserBillingInfoResult?>>> GetUserBillingInfoById(int id)
+        public async Task<ActionResult<ApiResponse<GetUserBillingInfoResult?>>> GetUserBillingInfoById()
         {
             try
             {
-                // Call the service which performs the DB logic and mapping
-                var result = await _userService.GetUserBillingInfoByIdAsync(id);
+                var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(idClaim) || !int.TryParse(idClaim, out int userId))
+                {
+                    return Unauthorized(new ApiResponse<GetUserBillingInfoResult>
+                    {
+                        WasSuccessful = false,
+                        Message = "Invalid or missing User ID in token."
+                    });
+                }
+
+                var result = await _userService.GetUserBillingInfoByIdAsync(userId);
 
                 // Wrap the result in  common ApiResponse structure
                 return Ok(new ApiResponse<GetUserBillingInfoResult?>
@@ -234,6 +264,20 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         [HttpPut("edit-name")]
         public async Task<ActionResult<ApiResponse<EditUserNameResult?>>> EditNameOfUser(EditUserName editUserName)
         {
+            // Extract the ID from the JWT Claims
+            var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(idClaim) || !int.TryParse(idClaim, out int userId))
+            {
+                return Unauthorized(new ApiResponse<EditUserNameResult?>
+                {
+                    WasSuccessful = false,
+                    Message = "Invalid or missing User ID in token."
+                });
+            }
+
+          
+
             var validationResult = await _editUserNameValidator.ValidateAsync(editUserName);
 
             if (!validationResult.IsValid)
@@ -244,7 +288,12 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
             try
             {
-                var userEditiedInfo = await _userService.EditUserNameAsync(editUserName);
+                var userEditiedInfo = await _userService.EditUserNameAsync(new EditUserNameDto
+                {
+                    FirstName = editUserName.FirstName,
+                    LastName = editUserName.LastName,
+                    Id = userId
+                });
                 var response = new ApiResponse<EditUserNameResult?> { Data = userEditiedInfo, Message = "Name changed successfully", WasSuccessful = true };
                 return Ok(response);
             }
@@ -266,7 +315,26 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         {
             try
             {
-                await _userService.UpdateBillingAddressByUserIdAsync(requestInfo);
+                var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(idClaim) || !int.TryParse(idClaim, out int userId))
+                {
+                    return Unauthorized(new ApiResponse<EditUserNameResult?>
+                    {
+                        WasSuccessful = false,
+                        Message = "Invalid or missing User ID in token."
+                    });
+                }
+
+                await _userService.UpdateBillingAddressByUserIdAsync(new UpdateBillingAddressDto
+                {
+                    Address1 = requestInfo.Address1,
+                    Address2 = requestInfo.Address2,
+                    City =  requestInfo.City,
+                    PostalCode = requestInfo.PostalCode,
+                    UserId = userId
+                });
+
                 var response = new ApiResponse { Message = "Billing address updated successfully", WasSuccessful = true };
                 return Ok(response);
             }
@@ -285,10 +353,24 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
         [Authorize(Roles = "Customer")]
         [HttpGet("cart")]
-        public async Task<ActionResult<ApiResponse<ICollection<GetCartItem>?>>> GetAllCartItems(int userId)
+        public async Task<ActionResult<ApiResponse<ICollection<GetCartItem>?>>> GetAllCartItems()
         {
             try
             {
+               
+                var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(idClaim) || !int.TryParse(idClaim, out int userId))
+                {
+                    return Unauthorized(new ApiResponse<EditUserNameResult?>
+                    {
+                        WasSuccessful = false,
+                        Message = "Invalid or missing User ID in token."
+                    });
+                }
+
+               
+
                 var cart = (await _userService.GetUserCartByUserIdAsync(userId)).ToList();
                 var response = new ApiResponse<ICollection<GetCartItem>?> { WasSuccessful = true, Message = "Cart retrieved successfully", Data = cart };
                 return Ok(response);
@@ -311,7 +393,23 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         {
             try
             {
-                var cartItem = await _userService.AddItemToCartAsync(addCartItem);
+                var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(idClaim) || !int.TryParse(idClaim, out int userId))
+                {
+                    return Unauthorized(new ApiResponse<EditUserNameResult?>
+                    {
+                        WasSuccessful = false,
+                        Message = "Invalid or missing User ID in token."
+                    });
+                }
+
+
+                var cartItem = await _userService.AddItemToCartAsync( new AddCartItemDto
+                {
+                    BookId = addCartItem.BookId,
+                    UserId = userId,
+                });
                 var response = new ApiResponse<GetCartItem?> { WasSuccessful = true, Data = cartItem, Message = "Item added succesfully" };
                 return Ok(response);
             }
@@ -347,7 +445,21 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         {
             try
             {
-                var removedCartItemId = await _userService.RemoveItemFromCartAsync(removeCartItem.CartItemId, removeCartItem.UserId);
+                // Extract the ID from the JWT Claims
+                var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(idClaim) || !int.TryParse(idClaim, out int userId))
+                {
+                    return Unauthorized(new ApiResponse<EditUserNameResult?>
+                    {
+                        WasSuccessful = false,
+                        Message = "Invalid or missing User ID in token."
+                    });
+                }
+
+                
+
+                var removedCartItemId = await _userService.RemoveItemFromCartAsync(removeCartItem.CartItemId, userId);
                 var response = new ApiResponse<int?> { WasSuccessful = true, Message = "Item was removed successfully"};
                 return Ok(response);
             }
@@ -368,8 +480,22 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         public async Task<ActionResult<GetCartItem?>> ChangeCartItemAmount(ChangeCartItemQuantity changeCartItemQuantity)
         {
             try
-            {
-                var updatedCartItem = await _userService.ChangeCartItemQuantityAsync(changeCartItemQuantity.CartItemId, changeCartItemQuantity.Quantity, changeCartItemQuantity.UserId);
+
+            { // Extract the ID from the JWT Claims
+                var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(idClaim) || !int.TryParse(idClaim, out int userId))
+                {
+                    return Unauthorized(new ApiResponse<EditUserNameResult?>
+                    {
+                        WasSuccessful = false,
+                        Message = "Invalid or missing User ID in token."
+                    });
+                }
+
+                
+
+                var updatedCartItem = await _userService.ChangeCartItemQuantityAsync(changeCartItemQuantity.CartItemId, changeCartItemQuantity.Quantity, userId);
                 var reponse = new ApiResponse<GetCartItem?> { Data = updatedCartItem, Message = "Cart item updated successfully", WasSuccessful = true };
                 return Ok(reponse);
             }

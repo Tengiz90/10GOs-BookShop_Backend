@@ -3,6 +3,5 @@
     public class RemoveCartItem
     {
         public int CartItemId { get; set; }
-        public int UserId { get; set; }
     }
 }

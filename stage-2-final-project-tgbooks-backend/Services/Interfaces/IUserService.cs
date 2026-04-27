@@ -12,12 +12,12 @@ namespace stage_2_final_project_tgbooks_backend.Services.Interfaces
         Task<ConfirmEmailResult> ConfirmEmailAsync(ConfirmEmail confirmEmail);
         Task<GetUserByEmailAndPasswordResultDto> GetUserByEmailAndPasswordAsync(SignInUser signInUser);
         Task<GetUserBillingInfoResult> GetUserBillingInfoByIdAsync(int id);
-        Task<PurchaseBooksResult> AddOrderAsync(PurchaseBooks order);
-        Task<EditUserNameResult> EditUserNameAsync(EditUserName userName);
-        Task UpdateBillingAddressByUserIdAsync(UpdateBillingAddress updatedAddress);
+        Task<PurchaseBooksResult> AddOrderAsync(PurchaseBooksDto order);
+        Task<EditUserNameResult> EditUserNameAsync(EditUserNameDto userName);
+        Task UpdateBillingAddressByUserIdAsync(UpdateBillingAddressDto updatedAddress);
 
         Task<ICollection<GetCartItem>> GetUserCartByUserIdAsync(int userId);
-        Task<GetCartItem> AddItemToCartAsync(AddCartItem addCartItem);
+        Task<GetCartItem> AddItemToCartAsync(AddCartItemDto addCartItem);
         Task<int> RemoveItemFromCartAsync(int cartItemId, int userId);
         Task<GetCartItem> ChangeCartItemQuantityAsync(int cartItemId, int quantity, int userId);
 

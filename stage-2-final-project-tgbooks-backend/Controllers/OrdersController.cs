@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using stage_2_final_project_tgbooks_backend.Core.Exceptions;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Authors;
+using stage_2_final_project_tgbooks_backend.Requests.Models.Users;
 using stage_2_final_project_tgbooks_backend.Responses;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Books;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Orders;
+using stage_2_final_project_tgbooks_backend.Responses.Models.Users;
 using stage_2_final_project_tgbooks_backend.Services.Interfaces;
 
 namespace stage_2_final_project_tgbooks_backend.Controllers
@@ -48,10 +50,24 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
         [Authorize]
         [HttpGet("get-by-user")]
-        public async Task<ActionResult<ApiResponse<ICollection<GetOrderWithDetails>?>>> GetOrdersByUserId(int userId)
+        public async Task<ActionResult<ApiResponse<ICollection<GetOrderWithDetails>?>>> GetOrdersByUserId()
         {
             try
             {
+               
+                var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(idClaim) || !int.TryParse(idClaim, out int userId))
+                {
+                    return Unauthorized(new ApiResponse<EditUserNameResult?>
+                    {
+                        WasSuccessful = false,
+                        Message = "Invalid or missing User ID in token."
+                    });
+                }
+
+                
+
                 var orders = await _orderService.GetOrdersByUserIdAsync(userId);
 
                 var response = new ApiResponse<ICollection<GetOrderWithDetails>?> { Message = "Oders retrieval was successful", Data = orders, WasSuccessful = true };

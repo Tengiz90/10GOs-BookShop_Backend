@@ -1,7 +1,8 @@
-﻿namespace stage_2_final_project_tgbooks_backend.Requests.Models.Users
+﻿namespace stage_2_final_project_tgbooks_backend.Services.AdditionalModels
 {
-    public class UpdateBillingAddress
+    public class UpdateBillingAddressDto
     {
+        public int UserId { get; set; }
         public string Address1 { get; set; } = string.Empty;
 
         public string Address2 { get; set; } = string.Empty;

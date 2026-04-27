@@ -108,7 +108,7 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
             };
 
         }
-        public async Task<PurchaseBooksResult> AddOrderAsync(PurchaseBooks purchasebooks)
+        public async Task<PurchaseBooksResult> AddOrderAsync(PurchaseBooksDto purchasebooks)
         {
             var order = await _databaseManager.PurchaseBooksByIdsAsync(purchasebooks.BookIds, purchasebooks.QuantitiesToPurchaseEach, purchasebooks.UserId);
             return new PurchaseBooksResult
@@ -126,14 +126,14 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
             };
         }
 
-        public async Task<EditUserNameResult> EditUserNameAsync(EditUserName userName)
+        public async Task<EditUserNameResult> EditUserNameAsync(EditUserNameDto userName)
         {
            var nameResult = await _databaseManager.EditUserFullNameByIdAsync(
                userName.FirstName, userName.LastName, userName.Id);
             return new EditUserNameResult { FirstName = nameResult.FirstName, LastName =nameResult.LastName, UserId = nameResult.Id };
         }
 
-        public async Task UpdateBillingAddressByUserIdAsync(UpdateBillingAddress updatedAddress)
+        public async Task UpdateBillingAddressByUserIdAsync(UpdateBillingAddressDto updatedAddress)
         {
           await  _databaseManager.UpdateBillingAddressByUserIdAsync(updatedAddress.UserId, 
                 new Address { 
@@ -241,7 +241,7 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
             }).ToList();
         }
 
-        public async Task<GetCartItem> AddItemToCartAsync(AddCartItem addCartItem)
+        public async Task<GetCartItem> AddItemToCartAsync(AddCartItemDto addCartItem)
         {
             var cartItem = await _databaseManager.AddItemToCartAsync(addCartItem.BookId, addCartItem.UserId);
             return new GetCartItem { 
