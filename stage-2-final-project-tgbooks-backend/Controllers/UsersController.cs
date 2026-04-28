@@ -389,7 +389,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
         [Authorize(Roles = "Customer")]
         [HttpPost("cart")]
-        public async Task<ActionResult<GetCartItem?>> AddToCart(AddCartItem addCartItem)
+        public async Task<ActionResult<ApiResponse<GetCartItem?>>> AddToCart(AddCartItem addCartItem)
         {
             try
             {
@@ -397,7 +397,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
                 if (string.IsNullOrEmpty(idClaim) || !int.TryParse(idClaim, out int userId))
                 {
-                    return Unauthorized(new ApiResponse<EditUserNameResult?>
+                    return Unauthorized(new ApiResponse<GetCartItem?>
                     {
                         WasSuccessful = false,
                         Message = "Invalid or missing User ID in token."
@@ -408,6 +408,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                 var cartItem = await _userService.AddItemToCartAsync( new AddCartItemDto
                 {
                     BookId = addCartItem.BookId,
+                    Quantity = addCartItem.Quantity,
                     UserId = userId,
                 });
                 var response = new ApiResponse<GetCartItem?> { WasSuccessful = true, Data = cartItem, Message = "Item added succesfully" };
@@ -432,7 +433,16 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             {
                 var cartIsFullExceptionResponse = new ApiResponse<GetCartItem?> { Data = null, Message = ex.Message, WasSuccessful = false };
                 return BadRequest(cartIsFullExceptionResponse);
-            } catch (Exception ex)
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new ApiResponse<GetCartItem?>
+                {
+                    WasSuccessful = false,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
             {
                 var errorResponse = new ApiResponse<GetCartItem?> { Data = null, WasSuccessful = false, Message = "Could not add item to cart: " + ex.Message };
                 return StatusCode(500, errorResponse);

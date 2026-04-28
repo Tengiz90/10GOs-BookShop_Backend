@@ -243,7 +243,7 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
 
         public async Task<GetCartItem> AddItemToCartAsync(AddCartItemDto addCartItem)
         {
-            var cartItem = await _databaseManager.AddItemToCartAsync(addCartItem.BookId, addCartItem.UserId);
+            var cartItem = await _databaseManager.AddItemToCartAsync(addCartItem.BookId, addCartItem.UserId, addCartItem.Quantity);
             return new GetCartItem { 
                 BookId = cartItem.BookId,
                 ImageURL = cartItem.Book.ImageURL,

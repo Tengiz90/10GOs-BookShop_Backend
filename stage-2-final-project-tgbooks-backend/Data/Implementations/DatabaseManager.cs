@@ -414,7 +414,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             return user.Cart;
         }
 
-        public async Task<CartItem> AddItemToCartAsync(int bookId, int userId)
+        public async Task<CartItem> AddItemToCartAsync(int bookId, int userId, int bookQuantity)
         {
             var user = await _db.Users
                 .Include(u => u.Cart)
@@ -433,6 +433,17 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
 
             if (book.Quantity <= 0)
                 throw new NotEnoughStockException(book.Title, book.Language.ToString(), 0, true);
+
+            //if requested quantity exceeds available stock
+            if (bookQuantity > book.Quantity)
+                throw new NotEnoughStockException(
+                    book.Title,
+                    book.Language.ToString(),
+                    book.Quantity
+                );
+
+            if (bookQuantity <= 0)
+                throw new ArgumentException("Quantity must be greater than 0");
 
             if (user.Cart == null)
             {
@@ -457,7 +468,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             {
                 BookId = bookId,
                 Cart = user.Cart, // EF will handle CartId automatically
-                Quantity = 1
+                Quantity = bookQuantity
             };
 
             user.Cart.Items.Add(cartItem);
