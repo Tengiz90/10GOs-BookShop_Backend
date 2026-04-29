@@ -461,7 +461,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             if (existingItem != null)
                 throw new AlreadyInCartException("Book is already in your cart");
 
-            if (user.Cart.Items.Count >= 200)
+            if (user.Cart.Items.Count >= 100)
                 throw new CartIsFullException("User cart is full.");
 
             var cartItem = new CartItem
