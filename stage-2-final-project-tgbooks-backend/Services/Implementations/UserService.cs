@@ -238,6 +238,7 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
                 ImageURL = item.Book.ImageURL,
                 Language = item.Book.Language,
                 Quantity = item.Quantity,
+                Title = item.Book.Title,
             }).ToList();
         }
 
