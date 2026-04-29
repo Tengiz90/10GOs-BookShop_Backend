@@ -9,6 +9,7 @@ using stage_2_final_project_tgbooks_backend.Responses;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Books;
 using stage_2_final_project_tgbooks_backend.Services.AdditionalModels;
 using stage_2_final_project_tgbooks_backend.Services.Interfaces;
+using System.Security.Claims;
 using WebApplication2.Services.Interfaces;
 
 namespace stage_2_final_project_tgbooks_backend.Controllers
@@ -36,6 +37,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             _storageService = storageService;
         }
 
+     
         [HttpGet("get-by-category")]
         public async Task<ActionResult<ApiResponse<ICollection<GetBook>?>>> GetBooksByCategory(
             int categoryId,
@@ -47,7 +49,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
                 if (User.Identity?.IsAuthenticated == true)
                 {
-                    var idClaim = User.FindFirst("id");
+                    var idClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("id");
 
                     if (idClaim != null && int.TryParse(idClaim.Value, out var parsedId))
                     {
@@ -83,6 +85,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
         }
 
+   
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<GetBook?>>> GetBookById(int id)
         {
@@ -92,7 +95,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
                 if (User.Identity?.IsAuthenticated == true)
                 {
-                    var idClaim = User.FindFirst("id");
+                    var idClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("id");
 
                     if (idClaim != null && int.TryParse(idClaim.Value, out var parsedId))
                     {
@@ -137,7 +140,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
         }
        
-
+ 
         [HttpGet("page")]
         public async Task<ActionResult<ApiResponse<ICollection<GetBook>?>>> GetBooksPage(
          [FromQuery] string? title, // optional search
@@ -151,7 +154,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
                 if (User.Identity?.IsAuthenticated == true)
                 {
-                    var idClaim = User.FindFirst("id");
+                    var idClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("id");
 
                     if (idClaim != null && int.TryParse(idClaim.Value, out var parsedId))
                     {
@@ -192,7 +195,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
                 if (User.Identity?.IsAuthenticated == true)
                 {
-                    var idClaim = User.FindFirst("id");
+                    var idClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("id");
 
                     if (idClaim != null && int.TryParse(idClaim.Value, out var parsedId))
                     {
@@ -343,7 +346,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
             if (User.Identity?.IsAuthenticated == true)
             {
-                var idClaim = User.FindFirst("id");
+                var idClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("id");
 
                 if (idClaim != null && int.TryParse(idClaim.Value, out var parsedId))
                 {
