@@ -372,7 +372,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                 .Where(o => o.UserId == userId)
                 .Include(o => o.User)
                 .ThenInclude(u => u.Address)
-                .Include(o => o.Items)
+                .Include(o => o.Items.OrderByDescending(ci => ci.CreatedAt))
                 .ThenInclude(oi => oi.Book)
                 .ToListAsync();
         }
@@ -404,7 +404,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
         {
             var user = await _db.Users
             .Include(u => u.Cart)
-            .ThenInclude(c => c.Items)
+            .ThenInclude(c => c.Items.OrderByDescending(ci => ci.CreatedAt))
             .ThenInclude(ci => ci.Book)
             .FirstOrDefaultAsync(u => u.Id == userId);
 
