@@ -102,8 +102,9 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
                 // Mapping from the User's Address navigation property
                 Address1 = user.Address.Address1,
                 Address2 = user.Address.Address2 ?? string.Empty,
-                PostalCode = user.Address.PostalCode,
-                City = user.Address.City ?? string.Empty
+                PostalCode = user.Address.PostalCode ?? string.Empty,
+                City = user.Address.City,
+                Email = user.Email
                 // Country defaults to "Georgia" in the class definition
             };
 
