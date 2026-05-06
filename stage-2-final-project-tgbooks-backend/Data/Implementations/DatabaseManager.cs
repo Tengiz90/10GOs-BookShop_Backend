@@ -544,11 +544,15 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             {
                 throw new EntityNotFoundException(nameof(User), userId);
             }
-            var userCart = user.Cart;
-            return userCart.Items.Select(ci => ci.BookId)
-                .ToList();
-        }
 
+            // Check if Cart is null. If it is, return an empty list immediately.
+            if (user.Cart == null || user.Cart.Items == null)
+            {
+                return new List<int>();
+            }
+
+            return user.Cart.Items.Select(ci => ci.BookId).ToList();
+        }
         public async Task<int> UnDeleteBookAsync(int bookId)
         {
            var book = await _db.Books.FirstOrDefaultAsync(b => b.Id == bookId);
