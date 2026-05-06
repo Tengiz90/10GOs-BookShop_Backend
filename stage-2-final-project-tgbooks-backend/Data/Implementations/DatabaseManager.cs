@@ -314,6 +314,11 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                 if (book == null)
                     throw new EntityNotFoundException(nameof(Book), bookId);
 
+                if (book.IsDeleted == true)
+                {
+                    throw new BookDeletedException(book.Title, book.Language.ToString());
+                }
+
                 if (book.Quantity < qtyToPurchase)
                     throw new NotEnoughStockException(
                           book.Title,

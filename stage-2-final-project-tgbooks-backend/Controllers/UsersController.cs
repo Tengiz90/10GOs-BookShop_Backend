@@ -68,6 +68,11 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                 var notFoundResponse = new ApiResponse<PurchaseBooksResult?> { Data = null, Message = ex.Message, WasSuccessful = false };
                 return NotFound(notFoundResponse);
             }
+            catch (BookDeletedException ex)
+            {
+                var notForSaleExceptionResponse = new ApiResponse<PurchaseBooksResult?> { Data = null, Message = ex.Message, WasSuccessful = false };
+                return BadRequest(notForSaleExceptionResponse);
+            }
             catch (NotEnoughStockException ex)
             {
                 var notEnoughStockResponse = new ApiResponse<PurchaseBooksResult?> { Data = null, Message = ex.Message, WasSuccessful = false };
