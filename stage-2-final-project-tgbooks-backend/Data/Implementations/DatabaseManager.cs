@@ -149,16 +149,36 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
 
         public async Task<int> RemoveBookByIdAsync(int id)
         {
+            //  Find the book
             var book = await _db.Books.FindAsync(id);
             if (book == null)
                 throw new EntityNotFoundException(nameof(Book), id);
 
-            //_db.Books.Remove(book);
+            //  Access the Carts "indirectly" using _db.Set<Cart>()
+            // This works even if we don't have public DbSet<Cart> Carts { get; set; }
+            var cartsWithBook = await _db.Set<Cart>()
+                .Include(c => c.Items)
+                .Where(c => c.Items.Any(ci => ci.BookId == id))
+                .ToListAsync();
+
+            //  Remove the specific item from each cart
+            foreach (var cart in cartsWithBook)
+            {
+                var itemToRemove = cart.Items.FirstOrDefault(ci => ci.BookId == id);
+                if (itemToRemove != null)
+                {
+                    cart.Items.Remove(itemToRemove);
+                }
+            }
+
+            //  Perform Soft Delete
             book.IsDeleted = true;
+
+            //  Save Changes
             await _db.SaveChangesAsync();
+
             return book.Id;
         }
-
 
         public async Task<int> AddUserAsync(User user)
         {
