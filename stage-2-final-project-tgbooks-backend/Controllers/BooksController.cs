@@ -451,17 +451,17 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPut("undelete")]
-        public async Task<ActionResult<int>> UnDeleteBook(int bookId)
+        public async Task<ActionResult<RestoreBookByIdResult>> UnDeleteBook(RestoreBook bookId)
         {
             try
             {
-                var unDeletedBookId = await _bookService.UnDeleteBookAsync(bookId);
-                var response = new ApiResponse<int?> { Data = unDeletedBookId, Message = "UnDeletion/Restoration was successful", WasSuccessful = true };
+                var unDeletedBookId = await _bookService.UnDeleteBookAsync(bookId.Id);
+                var response = new ApiResponse<RestoreBookByIdResult?> { Data = unDeletedBookId, Message = "UnDeletion/Restoration was successful", WasSuccessful = true };
                 return Ok(response);
             }
             catch (EntityNotFoundException ex)
             {
-                var notFoundResponse = new ApiResponse<int?>
+                var notFoundResponse = new ApiResponse<RestoreBookByIdResult?>
                 {
                     WasSuccessful = false,
                     Message = ex.Message,
@@ -471,7 +471,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             }
             catch (Exception ex)
             {
-                var errorResponse = new ApiResponse<int?>
+                var errorResponse = new ApiResponse<RestoreBookByIdResult?>
                 {
                     WasSuccessful = false,
                     Message = $"Could not undelete the book: {ex.Message}",

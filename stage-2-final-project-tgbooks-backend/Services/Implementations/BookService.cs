@@ -274,9 +274,12 @@ namespace WebApplication2.Services
             };
         }
 
-        public async Task<int> UnDeleteBookAsync(int bookId)
+        public async Task<RestoreBookByIdResult> UnDeleteBookAsync(int bookId)
         {
-          return await _databaseManager.UnDeleteBookAsync(bookId);
+            return new RestoreBookByIdResult 
+            { 
+                BookId = await _databaseManager.UnDeleteBookAsync(bookId) 
+            };
         }
 
 

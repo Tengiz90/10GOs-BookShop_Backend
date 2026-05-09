@@ -24,7 +24,7 @@ namespace WebApplication2.Services.Interfaces
         Task<ICollection<GetBook>> GetAllBooksOnSaleAsync(int? userId);
 
         Task<ICollection<GetBook>> GetAllDeletedBooksAsync();
-        Task<int> UnDeleteBookAsync(int bookId);
+        Task<RestoreBookByIdResult> UnDeleteBookAsync(int bookId);
 
     }
 }
