@@ -420,7 +420,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpGet("get-deleted")]
-        public async Task<ActionResult<ApiResponse<ICollection<GetBook>?>>> GetBooksDeletedBooks()
+        public async Task<ActionResult<ApiResponse<ICollection<GetBook>?>>> GetDeletedBooks()
         {
 
             try 
