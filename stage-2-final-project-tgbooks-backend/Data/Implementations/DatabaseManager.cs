@@ -109,7 +109,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             return await _db.Books.Include(b => b.Authors).Where(b => !b.IsDeleted).ToListAsync();
         }
 
-        public async Task<ICollection<Book>> GetBooksPageAsync(string? title, int? categoryId, int pageNumber, int pageSize)
+        public async Task<ICollection<Book>> GetBooksPageAsync(string? title, int? categoryId, bool? onSale, int pageNumber, int pageSize)
         {
             var query = _db.Books.AsQueryable();
 
@@ -121,6 +121,11 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             if (categoryId != null && categoryId > 0)
             {
                 query = query.Where(b => b.Categories.Any(c => c.Id == categoryId.Value));
+            }
+
+            if (onSale == true)
+            {
+                query = query.Where(b => b.OnSale == true);
             }
 
             return await query
