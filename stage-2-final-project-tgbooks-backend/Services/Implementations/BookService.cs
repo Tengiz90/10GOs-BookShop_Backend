@@ -4,6 +4,7 @@ using stage_2_final_project_tgbooks_backend.Data.Interfaces;
 using stage_2_final_project_tgbooks_backend.Data.Models;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Authors;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Books;
+using stage_2_final_project_tgbooks_backend.Responses.Models.Categories;
 using stage_2_final_project_tgbooks_backend.Services.AdditionalModels;
 using WebApplication2.Services.Interfaces;
 
@@ -85,7 +86,7 @@ namespace WebApplication2.Services
             };
         }
 
-        public async Task<GetBook> GetBookByIdAsync(int id, int? userId)
+        public async Task<GetBookWithCategories> GetBookByIdAsync(int id, int? userId)
         {
 
             var book = await _databaseManager.GetBookByIdAsync(id);
@@ -94,10 +95,14 @@ namespace WebApplication2.Services
             {
                 cartBookIds = await _databaseManager.GetUserCartBookIdsAsync(userId.Value);
             }
-                return new GetBook
-            {
+                return new GetBookWithCategories
+                {
                 Id = id,
                 OnSale = book.OnSale,
+                Categories = book.Categories.Select(  ca => new GetCategory {
+                    Id = ca.Id,
+                    Type = ca.Type
+                }).ToList(),
                 OffPercentage = book.OffPercentage,
                 AlreadyInCart = cartBookIds.Contains(book.Id),
                 Authors = book.Authors.Select(au => new GetAuthor

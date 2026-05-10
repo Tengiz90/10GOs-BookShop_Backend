@@ -87,7 +87,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
    
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<GetBook?>>> GetBookById(int id)
+        public async Task<ActionResult<ApiResponse<GetBookWithCategories?>>> GetBookById(int id)
         {
             try
             {
@@ -106,7 +106,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
                 var book = await _bookService.GetBookByIdAsync(id, userId);
 
-                var response = new ApiResponse<GetBook?>
+                var response = new ApiResponse<GetBookWithCategories?>
                 {
                     WasSuccessful = true,
                     Message = "Book retrieved successfully",
@@ -117,7 +117,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             }
             catch (EntityNotFoundException ex)
             {
-                var notFoundResponse = new ApiResponse<GetBook?>
+                var notFoundResponse = new ApiResponse<GetBookWithCategories?>
                 {
                     WasSuccessful = false,
                     Message = ex.Message,
@@ -128,7 +128,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             }
             catch (Exception ex)
             {
-                var errorResponse = new ApiResponse<GetBook?>
+                var errorResponse = new ApiResponse<GetBookWithCategories?>
                 {
                     WasSuccessful = false,
                     Message = $"Failed to retrieve book: {ex.Message}",
