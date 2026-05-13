@@ -36,6 +36,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             if (foundBook == null)
                 throw new EntityNotFoundException(nameof(Book), updatedBook.Id);
 
+            // Update basic properties
             foundBook.Title = updatedBook.Title;
             foundBook.OnSale = updatedBook.OnSale;
             foundBook.OffPercentage = updatedBook.OffPercentage;
@@ -43,23 +44,43 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             foundBook.Quantity = updatedBook.Quantity;
             foundBook.ImageURL = updatedBook.ImageURL;
 
+            // --- SYNC AUTHORS (Removes and Adds) ---
+
+            // 1. Identify which authors to remove (those currently in DB but not in the update request)
+            var incomingNames = updatedBook.Authors.Select(a => a.Name.Trim().ToLower()).ToList();
+            var authorsToRemove = foundBook.Authors
+                .Where(a => !incomingNames.Contains(a.Name.Trim().ToLower()))
+                .ToList();
+
+            foreach (var author in authorsToRemove)
+            {
+                foundBook.Authors.Remove(author); // Removes the link in the join table
+            }
+
+            // 2. Identify and add new/existing authors
             foreach (var author in updatedBook.Authors)
             {
-                // Check if this author already exists in the database
-                var existingAuthor = await _db.Authors.FirstOrDefaultAsync(a => a.Id == author.Id);
+                var normalizedName = author.Name.Trim().ToLower();
+
+                // Skip if they are already linked to this book
+                if (foundBook.Authors.Any(a => a.Name.Trim().ToLower() == normalizedName))
+                    continue;
+
+                // Check if the author exists in the global Authors table
+                var existingAuthor = await _db.Authors
+                    .FirstOrDefaultAsync(a => a.Name.Trim().ToLower() == normalizedName);
+
                 if (existingAuthor != null)
                 {
-                    // Attach the tracked entity
-                    foundBook.Authors.Add(existingAuthor);
+                    foundBook.Authors.Add(existingAuthor); // Link existing record
                 }
                 else
                 {
-                    // New author, EF will insert it
-                    foundBook.Authors.Add(author);
+                    foundBook.Authors.Add(author); // Insert and link new author record
                 }
             }
 
-
+            // --- SYNC CATEGORIES ---
             foundBook.Categories.Clear();
             foreach (var category in updatedBook.Categories)
             {
@@ -69,8 +90,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             }
 
             await _db.SaveChangesAsync();
-            return updatedBook.Id;
-
+            return foundBook.Id;
         }
 
         public async Task<Book> GetBookByIdAsync(int id)

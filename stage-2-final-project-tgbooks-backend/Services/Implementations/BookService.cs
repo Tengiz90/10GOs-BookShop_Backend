@@ -53,39 +53,29 @@ namespace WebApplication2.Services
 
         public async Task<EditBookResult> EditBookAsync(EditBookDto request)
         {
-            // Map author names to Author entities
-            var authors = new List<Author>();
-            foreach (var authorName in request.AuthorNames)
-            {
-                // Check if author already exists in DB
-                var existingAuthor = (await _databaseManager.GetAuthorsAsync())
-                    .FirstOrDefault(a => a.Name.Trim().ToLower() == authorName.Trim().ToLower());
-
-                if (existingAuthor != null)
-                    authors.Add(existingAuthor);
-                else
-                    authors.Add(new Author { Name = authorName }); // create new author
-            }
+            // Just map the names. Don't call the DB here.
+            var authors = request.AuthorNames.Select(name => new Author { Name = name }).ToList();
 
             var book = new Book
             {
                 Id = request.Id,
                 Title = request.Title.Trim(),
-                OnSale =  request.OnSale,
+                OnSale = request.OnSale,
                 OffPercentage = request.OffPercentage,
-                Authors = authors,
+                Authors = authors, // Temporary list of author objects with names
                 Language = request.Language,
                 Quantity = request.Quantity,
                 ImageURL = request.ImageURL,
+                // Keep category mapping here if your manager expects IDs
                 Categories = _databaseManager.GetCategories()
-                         .Where(c => request.CategoryIds.Contains(c.Id)).ToList()
+                    .Where(c => request.CategoryIds.Contains(c.Id)).ToList()
             };
+
             return new EditBookResult
             {
-               BookId = await _databaseManager.EditBookByIdAsync(book)
+                BookId = await _databaseManager.EditBookByIdAsync(book)
             };
         }
-
         public async Task<GetBookWithCategories> GetBookByIdAsync(int id, int? userId)
         {
 
