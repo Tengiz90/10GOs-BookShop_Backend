@@ -296,7 +296,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPost("Add")]
+        [HttpPost("add")]
         public async Task<ActionResult<ApiResponse<AddBookResult?>>> AddBook(AddNewBook addNewBook)
         {
 
