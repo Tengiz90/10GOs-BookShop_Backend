@@ -9,6 +9,7 @@ namespace stage_2_final_project_tgbooks_backend.Responses.Models.Users
         public string LastName { get; set; }
         public string Email { get; set; }
         public string JwtToken { get; set; }
+        public bool IsVerified { get; set; }
         public Role role { get; set; }
         public DateOnly DateOfBirth { get; set; }
         public ICollection<GetUserOrder> Orders {  get; set; }

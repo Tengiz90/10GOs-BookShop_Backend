@@ -73,6 +73,7 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                IsVerified = user.IsVerified,
                 Orders = user.Orders.Select(o => new GetUserOrder
                 {
                     Id = o.Id,
