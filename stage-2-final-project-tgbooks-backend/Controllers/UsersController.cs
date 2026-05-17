@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using stage_2_final_project_tgbooks_backend.Core.Exceptions;
 using stage_2_final_project_tgbooks_backend.Helpers;
 using stage_2_final_project_tgbooks_backend.Requests.Models.Users;
@@ -135,6 +136,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
 
         [Authorize]
+        [EnableRateLimiting("StrictIpValidation")]
         [HttpPost("confirm-email")]
         public async Task<ActionResult<ApiResponse<ConfirmEmailResult?>>> VerifyEmail(ConfirmEmail confirmEmail)
         {
@@ -171,6 +173,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         }
 
         [HttpPost("sign-in")]
+        [EnableRateLimiting("StrictIpValidation")]
         public async Task<ActionResult<ApiResponse<GetUserByEmailAndPasswordResult?>>> SignIn(SignInUser signInUser)
         {
             var validationResult = await _signInUserValidator.ValidateAsync(signInUser);

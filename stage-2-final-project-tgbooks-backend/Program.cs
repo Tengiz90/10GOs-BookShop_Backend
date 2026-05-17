@@ -2,18 +2,19 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsyncta.Implementations;
 using stage_2_final_project_tgbooks_backend.Data;
 using stage_2_final_project_tgbooks_backend.Data.Implementations;
 using stage_2_final_project_tgbooks_backend.Data.Interfaces;
-using Microsoft.IdentityModel.Tokens;
 using stage_2_final_project_tgbooks_backend.Services.Implementations;
 using stage_2_final_project_tgbooks_backend.Services.Interfaces;
 using System.Reflection;
+using System.Text;
+using System.Threading.RateLimiting;
 using WebApplication2.Services;
 using WebApplication2.Services.Interfaces;
-using System.Text;
 
 namespace stage_2_final_project_tgbooks_backend
 {
@@ -39,6 +40,30 @@ namespace stage_2_final_project_tgbooks_backend
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddSingleton<IStorageService, BlobService>();
             builder.Services.AddSingleton<IEmailSender, EmailSender>();
+
+            // Register the Rate Limiting Services
+            builder.Services.AddRateLimiter(options =>
+            {
+                // Return HTTP 429 Too Many Requests when a client is blocked
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+                // Define a custom policy named "StrictIpValidation"
+                options.AddPolicy("StrictIpValidation", httpContext =>
+                {
+                    // Safely extract the client's remote IP address
+                    var remoteIpAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
+
+                    // Apply a fixed window limit: 20 requests every 50 minute per unique IP
+                    return RateLimitPartition.GetFixedWindowLimiter(
+                        partitionKey: remoteIpAddress,
+                        factory: _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 20,                  // Allow maximum 20 requests
+                            Window = TimeSpan.FromMinutes(60), // Inside a 1-hour window
+                            QueueLimit = 0                    // Drop extra requests instantly instead of queuing them
+                        });
+                });
+            });
 
 
             builder.Services.AddCors(options =>
@@ -152,6 +177,10 @@ namespace stage_2_final_project_tgbooks_backend
             app.UseHttpsRedirection();
 
             app.UseCors("AllowAll");
+
+            // Enable the Rate Limiter Middleware
+            app.UseRateLimiter();
+
             // Authentication MUST come before Authorization and MapControllers
             app.UseAuthentication();
             app.UseAuthorization();
