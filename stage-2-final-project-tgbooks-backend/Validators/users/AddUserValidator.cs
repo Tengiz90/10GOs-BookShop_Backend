@@ -31,6 +31,17 @@ namespace stage_2_final_project_tgbooks_backend.Validators.users
                 .NotEmpty().WithMessage("Password can't be empty")
                 .Matches(@"^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$").WithMessage("Password format incorrect");
 
+            RuleFor(u => u.Address1)
+                .NotEmpty().WithMessage("Adress 1 can't be empty.");
+
+            RuleFor(u => u.City)
+            .NotEmpty().WithMessage("City name can't be empty.");
+
+            RuleFor(u => u.PostalCode)
+            .NotEmpty().WithMessage("Postal code can't be empty.");
+
+
+
         }
     }
 }
