@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 using stage_2_final_project_tgbooks_backend.Core.Exceptions;
 using stage_2_final_project_tgbooks_backend.Data;
 using stage_2_final_project_tgbooks_backend.Data.Interfaces;
@@ -172,6 +173,23 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
         {
             return _db.Categories;
         }
+
+        public string GetCategoryNameByCategoryId(int id)
+        {
+            var foundCategoryName = _db.Categories
+            .Where(c => c.Id == id)
+            .Select(c => c.Type)
+            .FirstOrDefault();
+
+            if (foundCategoryName == null)
+            {
+                throw new EntityNotFoundException(nameof(Category), id);
+            }
+            else
+            {
+                return foundCategoryName;
+            }
+        }        
 
         public async Task<int> RemoveBookByIdAsync(int id)
         {

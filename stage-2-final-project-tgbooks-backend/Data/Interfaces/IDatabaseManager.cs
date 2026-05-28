@@ -18,11 +18,16 @@ namespace stage_2_final_project_tgbooks_backend.Data.Interfaces
         Task<ICollection<Book>> GetBooksByCategoryIdAsync(int id);
         // Get books by category, sorted alphabetically by Title
         Task<ICollection<Book>> GetBooksByCategoryIdSortedByTitleAsync(int categoryId);
+
+
         Task<ICollection<Book>> GetAllBooksAsync();
         Task<ICollection<Book>> GetBooksPageAsync(string? title, int? categoryId, bool? onSale, int pageNumber, int pageSize);
         Task<ICollection<Book>> GetAllBooksOnSaleAsync();
         Task<ICollection<Book>> GetAllDeletedBooksAsync();
         IQueryable<Category> GetCategories();
+
+        string GetCategoryNameByCategoryId(int id);
+
         Task<User> GetUserByEmailAndPasswordAsync(string email, string password);
         Task<User> GetUserBillingInfoByIdAsync(int id);
 

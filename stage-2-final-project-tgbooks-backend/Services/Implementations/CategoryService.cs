@@ -23,5 +23,10 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
             }).ToList();
         
         }
+
+        public string GetCategoryNameByCategoryId(int id)
+        {
+            return _databaseManager.GetCategoryNameByCategoryId(id);
+        }
     }
 }

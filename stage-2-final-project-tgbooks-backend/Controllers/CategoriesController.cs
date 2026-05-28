@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using stage_2_final_project_tgbooks_backend.Core.Exceptions;
 using stage_2_final_project_tgbooks_backend.Data.Models;
 using stage_2_final_project_tgbooks_backend.Responses;
 using stage_2_final_project_tgbooks_backend.Responses.Models.Categories;
@@ -43,6 +44,46 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
                     return StatusCode(500, errorResponse);
                 }
+            }
+        }
+
+        [HttpGet("get-name/{id}")]
+        public async Task<ActionResult<ApiResponse<string?>>> GetCategoryNameById(int id)
+        {
+            try
+            {
+                var categoryName = _categoryService.GetCategoryNameByCategoryId(id);
+
+                var response = new ApiResponse<string?>
+                {
+                    WasSuccessful = true,
+                    Message = "Category name retrieval was successful",
+                    Data = categoryName
+                };
+
+                return Ok(response);
+            }
+            catch (EntityNotFoundException ex)
+            {
+                var notFoundResponse = new ApiResponse<string?>
+                {
+                    WasSuccessful = false,
+                    Message = ex.Message,
+                    Data = null
+                };
+
+                return NotFound(notFoundResponse);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new ApiResponse<string?>
+                {
+                    WasSuccessful = false,
+                    Message = $"Failed to retrieve category name due to unexpected error occurred: {ex.Message}",
+                    Data = null
+                };
+
+                return StatusCode(500, errorResponse);
             }
         }
     }
