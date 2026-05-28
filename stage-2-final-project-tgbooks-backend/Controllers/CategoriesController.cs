@@ -47,9 +47,12 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             }
         }
 
-        [HttpGet("get-name/{id}")]
+        [HttpGet("get-name/{id:int}")]
         public async Task<ActionResult<ApiResponse<string?>>> GetCategoryNameById(int id)
         {
+            if (id <= 0)
+                return BadRequest("Invalid category ID.");
+
             try
             {
                 var categoryName = _categoryService.GetCategoryNameByCategoryId(id);
