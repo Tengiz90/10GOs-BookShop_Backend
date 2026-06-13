@@ -38,6 +38,7 @@ namespace stage_2_final_project_tgbooks_backend
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IAuthorService, AuthorService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IBookAnalyticsService, BookAnalyticsService>(); 
             builder.Services.AddSingleton<IStorageService, BlobService>();
             builder.Services.AddSingleton<IEmailSender, EmailSender>();
 

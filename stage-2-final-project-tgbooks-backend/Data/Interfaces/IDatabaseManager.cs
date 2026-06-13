@@ -56,7 +56,10 @@ namespace stage_2_final_project_tgbooks_backend.Data.Interfaces
         Task<ICollection<int>> GetUserCartBookIdsAsync(int userId);
 
         Task<int> UnDeleteBookAsync(int bookId);
-        
+
+
+        public Task<byte[]> GenerateBooksMlDataCsvAsync();
+
 
     }
 }

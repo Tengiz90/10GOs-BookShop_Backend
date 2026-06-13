@@ -4,6 +4,7 @@ using stage_2_final_project_tgbooks_backend.Core.Exceptions;
 using stage_2_final_project_tgbooks_backend.Data;
 using stage_2_final_project_tgbooks_backend.Data.Interfaces;
 using stage_2_final_project_tgbooks_backend.Data.Models;
+using System.Text;
 
 namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsyncta.Implementations
 {
@@ -656,6 +657,89 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
            book.IsDeleted = false; 
            await _db.SaveChangesAsync();
            return book.Id;
+        }
+
+
+        public async Task<byte[]> GenerateBooksMlDataCsvAsync()
+        {
+            // Fetch all books including their relationships, ignoring the IsDeleted soft-delete status 
+            // to keep historical training metrics for your ML models.
+            var books = await _db.Books
+                .Include(b => b.Categories)
+                .Include(b => b.Authors)
+                .AsNoTracking()
+                .ToListAsync();
+
+            // Query active counts across Carts directly using EF Core groupings
+            var cartCounts = await _db.Set<CartItem>()
+                .GroupBy(ci => ci.BookId)
+                .Select(g => new { BookId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.BookId, x => x.Count);
+
+            // Query total purchase history metrics across Orders
+            var orderMetrics = await _db.Set<OrderItem>()
+                .GroupBy(oi => oi.BookId)
+                .Select(g => new {
+                    BookId = g.Key,
+                    OrderAppearances = g.Count(),
+                    TotalUnitsSold = g.Sum(oi => oi.Quantity)
+                })
+                .ToDictionaryAsync(x => x.BookId, x => x);
+
+            var csvBuilder = new StringBuilder();
+
+            // 1. CSV Header Row - Clean alphanumeric features for Python/Pandas parsing
+            csvBuilder.AppendLine("BookId,Title,Language,OriginalPrice,OnSale,OffPercentage,CurrentPrice,StockQuantity,TimesClicked,CartCount,OrderCount,TotalUnitsSold,CategoryCount,PrimaryCategory,AuthorCount");
+
+            // 2. Populate CSV Rows
+            foreach (var book in books)
+            {
+                cartCounts.TryGetValue(book.Id, out var cartCount);
+
+                int orderCount = 0;
+                int totalUnitsSold = 0;
+                if (orderMetrics.TryGetValue(book.Id, out var metrics))
+                {
+                    orderCount = metrics.OrderAppearances;
+                    totalUnitsSold = metrics.TotalUnitsSold;
+                }
+
+                // Compute current listed price
+                decimal currentPrice = book.OnSale
+                    ? book.OriginalPrice * (1 - ((decimal)book.OffPercentage / 100))
+                    : book.OriginalPrice;
+
+                // Escape quotes and commas in strings to prevent broken arrays in Python
+                string escapedTitle = book.Title.Contains(",") || book.Title.Contains("\"")
+                    ? $"\"{book.Title.Replace("\"", "\"\"")}\""
+                    : book.Title;
+
+                string primaryCategory = book.Categories.FirstOrDefault()?.Type ?? "Unknown";
+                string escapedCategory = primaryCategory.Contains(",") || primaryCategory.Contains("\"")
+                    ? $"\"{primaryCategory.Replace("\"", "\"\"")}\""
+                    : primaryCategory;
+
+                // Construct comma-separated vector values
+                csvBuilder.AppendLine(
+                    $"{book.Id}," +
+                    $"{escapedTitle}," +
+                    $"{(int)book.Language}," + // Cast enums to integers for numerical ML processing
+                    $"{book.OriginalPrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)}," +
+                    $"{(book.OnSale ? 1 : 0)}," +
+                    $"{book.OffPercentage}," +
+                    $"{currentPrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)}," +
+                    $"{book.Quantity}," +
+                    $"{book.TimesClicked}," +
+                    $"{cartCount}," +
+                    $"{orderCount}," +
+                    $"{totalUnitsSold}," +
+                    $"{book.Categories.Count}," +
+                    $"{escapedCategory}," +
+                    $"{book.Authors.Count}"
+                );
+            }
+
+            return Encoding.UTF8.GetBytes(csvBuilder.ToString());
         }
     }
 }
