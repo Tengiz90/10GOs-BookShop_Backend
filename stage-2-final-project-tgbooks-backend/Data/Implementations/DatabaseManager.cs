@@ -4,6 +4,7 @@ using stage_2_final_project_tgbooks_backend.Core.Exceptions;
 using stage_2_final_project_tgbooks_backend.Data;
 using stage_2_final_project_tgbooks_backend.Data.Interfaces;
 using stage_2_final_project_tgbooks_backend.Data.Models;
+using System.Globalization;
 using System.Text;
 
 namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsyncta.Implementations
@@ -660,24 +661,26 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
         }
 
 
+        /// <summary>
+        /// Generates a pure, flat UTF-8 encoded CSV dataset stream.
+        /// OPTIMIZED FOR: Python Pandas ingestion loops (pd.read_csv).
+        /// </summary>
         public async Task<byte[]> GenerateBooksMlDataCsvAsync()
         {
-            // Fetch all books including their relationships, ignoring the IsDeleted soft-delete status 
-            // to keep historical training metrics for your ML models.
             var books = await _db.Books
                 .Include(b => b.Categories)
                 .Include(b => b.Authors)
                 .AsNoTracking()
                 .ToListAsync();
 
-            // Query active counts across Carts directly using EF Core groupings
             var cartCounts = await _db.Set<CartItem>()
+                .AsNoTracking()
                 .GroupBy(ci => ci.BookId)
                 .Select(g => new { BookId = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => x.BookId, x => x.Count);
 
-            // Query total purchase history metrics across Orders
             var orderMetrics = await _db.Set<OrderItem>()
+                .AsNoTracking()
                 .GroupBy(oi => oi.BookId)
                 .Select(g => new {
                     BookId = g.Key,
@@ -686,28 +689,25 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                 })
                 .ToDictionaryAsync(x => x.BookId, x => x);
 
-            // Extract all unique category names present across your book data to build dynamic ML columns
-            var distinctCategoryNames = books
-                .SelectMany(b => b.Categories)
+            var allSystemCategories = await _db.Categories
+                .AsNoTracking()
+                .OrderBy(c => c.Id)
                 .Select(c => c.Type)
-                .Distinct()
-                .OrderBy(t => t)
-                .ToList();
+                .ToListAsync();
 
             var csvBuilder = new StringBuilder();
 
-            // 1. Build CSV Header Row with dynamic multi-label category features
+            // Build CSV Header Row
             var baseHeader = "BookId,Title,Language,OriginalPrice,OnSale,OffPercentage,CurrentPrice,StockQuantity,TimesClicked,CartCount,OrderCount,TotalUnitsSold,CategoryCount,AuthorCount";
 
-            foreach (var categoryName in distinctCategoryNames)
+            foreach (var categoryName in allSystemCategories)
             {
-                // Clean up column names (e.g., "Non-Fiction" or "Sci Fi" becomes "Category_Non_Fiction" or "Category_Sci_Fi")
                 string cleanColumnName = categoryName.Replace(" ", "_").Replace("-", "_");
                 baseHeader += $",Category_{cleanColumnName}";
             }
             csvBuilder.AppendLine(baseHeader);
 
-            // 2. Populate CSV Rows
+            // Populate CSV Rows
             foreach (var book in books)
             {
                 cartCounts.TryGetValue(book.Id, out var cartCount);
@@ -720,46 +720,67 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                     totalUnitsSold = metrics.TotalUnitsSold;
                 }
 
-                // Compute current listed price
                 decimal currentPrice = book.OnSale
                     ? book.OriginalPrice * (1 - ((decimal)book.OffPercentage / 100))
                     : book.OriginalPrice;
 
-                // Escape quotes and commas in strings to prevent broken arrays in Python
+                // Handle CSV quote escaping rules cleanly
                 string escapedTitle = book.Title.Contains(",") || book.Title.Contains("\"")
                     ? $"\"{book.Title.Replace("\"", "\"\"")}\""
                     : book.Title;
 
-                // Construct standard comma-separated vector values
-                var rowBuilder = new StringBuilder();
-                rowBuilder.Append(
-                    $"{book.Id}," +
-                    $"{escapedTitle}," +
-                    $"{(int)book.Language}," + // Cast enums to integers for numerical ML processing
-                    $"{book.OriginalPrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)}," +
-                    $"{(book.OnSale ? 1 : 0)}," +
-                    $"{book.OffPercentage}," +
-                    $"{currentPrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)}," +
-                    $"{book.Quantity}," +
-                    $"{book.TimesClicked}," +
-                    $"{cartCount}," +
-                    $"{orderCount}," +
-                    $"{totalUnitsSold}," +
-                    $"{book.Categories.Count}," +
-                    $"{book.Authors.Count}"
-                );
+                var line = $"{book.Id}," +
+                           $"{escapedTitle}," +
+                           $"{(int)book.Language}," +
+                           $"{book.OriginalPrice.ToString("F2", CultureInfo.InvariantCulture)}," +
+                           $"{(book.OnSale ? 1 : 0)}," +
+                           $"{book.OffPercentage}," +
+                           $"{currentPrice.ToString("F2", CultureInfo.InvariantCulture)}," +
+                           $"{book.Quantity}," +
+                           $"{book.TimesClicked}," +
+                           $"{cartCount}," +
+                           $"{orderCount}," +
+                           $"{totalUnitsSold}," +
+                           $"{book.Categories.Count}," +
+                           $"{book.Authors.Count}";
 
-                // 3. Dynamically append 1 or 0 for each system category column
-                foreach (var categoryName in distinctCategoryNames)
+                foreach (var categoryName in allSystemCategories)
                 {
                     int isAssociated = book.Categories.Any(c => c.Type == categoryName) ? 1 : 0;
-                    rowBuilder.Append($",{isAssociated}");
+                    line += $",{isAssociated}";
                 }
 
-                csvBuilder.AppendLine(rowBuilder.ToString());
+                csvBuilder.AppendLine(line);
             }
 
-            return Encoding.UTF8.GetBytes(csvBuilder.ToString());
+            // Fallback strategy: Prepend raw byte signatures to help local text readers parse Unicode layouts
+            byte[] csvBytes = Encoding.UTF8.GetBytes(csvBuilder.ToString());
+            byte[] bomBytes = { 0xEF, 0xBB, 0xBF };
+            byte[] combinedResult = new byte[bomBytes.Length + csvBytes.Length];
+            Buffer.BlockCopy(bomBytes, 0, combinedResult, 0, bomBytes.Length);
+            Buffer.BlockCopy(csvBytes, 0, combinedResult, bomBytes.Length, csvBytes.Length);
+
+            return combinedResult;
         }
+
+        /// <summary>
+        /// Alternative layout engine that converts the dataset matrix into a Tab-Separated Unicode format.
+        /// OPTIMIZED FOR: Flawless double-click execution directly in Excel 2019 without code conversion.
+        /// </summary>
+        public async Task<byte[]> GenerateBooksMlDataExcelFriendlyAsync()
+        {
+            // Call our underlying data logic to fetch the clean CSV text string array
+            byte[] rawCsvBytes = await GenerateBooksMlDataCsvAsync();
+            string csvContent = Encoding.UTF8.GetString(rawCsvBytes);
+
+            // Excel instantly recognizes UTF-16 Little Endian when combined with traditional tab indexing
+            string tabDelimitedContent = csvContent
+                .Replace("sep=\n", "") // Clean out header artifacts if present
+                .Replace(",", "\t");   // Convert row elements to clean sheet tabs
+
+            return Encoding.Unicode.GetBytes(tabDelimitedContent);
+        }
+
+
     }
 }
