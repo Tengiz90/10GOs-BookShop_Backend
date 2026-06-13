@@ -14,7 +14,7 @@ namespace stage_2_final_project_tgbooks_backend.Data.Interfaces
         Task<int> EditBookByIdAsync(Book updatedBook);
         Task<Order> PurchaseBooksByIdsAsync(ICollection<int> bookIds, ICollection<int> quantitiesToPurchaseEach, int userId);
 
-        Task<Book> GetBookByIdAsync(int id);
+        Task<Book> GetBookByIdAsync(int id, bool isUserViewing);
         Task<ICollection<Book>> GetBooksByCategoryIdAsync(int id);
         // Get books by category, sorted alphabetically by Title
         Task<ICollection<Book>> GetBooksByCategoryIdSortedByTitleAsync(int categoryId);

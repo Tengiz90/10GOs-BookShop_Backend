@@ -85,13 +85,14 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
         }
 
-   
+
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<GetBookWithCategories?>>> GetBookById(int id)
+        public async Task<ActionResult<ApiResponse<GetBookWithCategoriesAndDescription?>>> GetBookById(int id)
         {
             try
             {
                 int? userId = null;
+                bool isUserViewing = true; // Default to true
 
                 if (User.Identity?.IsAuthenticated == true)
                 {
@@ -101,12 +102,17 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                     {
                         userId = parsedId;
                     }
+
+                    // If the authenticated user is an Admin, set viewing to false
+                    if (User.IsInRole("Admin"))
+                    {
+                        isUserViewing = false;
+                    }
                 }
 
+                var book = await _bookService.GetBookByIdAsync(id, userId, isUserViewing);
 
-                var book = await _bookService.GetBookByIdAsync(id, userId);
-
-                var response = new ApiResponse<GetBookWithCategories?>
+                var response = new ApiResponse<GetBookWithCategoriesAndDescription?>
                 {
                     WasSuccessful = true,
                     Message = "Book retrieved successfully",
@@ -117,7 +123,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             }
             catch (EntityNotFoundException ex)
             {
-                var notFoundResponse = new ApiResponse<GetBookWithCategories?>
+                var notFoundResponse = new ApiResponse<GetBookWithCategoriesAndDescription?>
                 {
                     WasSuccessful = false,
                     Message = ex.Message,
@@ -128,7 +134,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             }
             catch (Exception ex)
             {
-                var errorResponse = new ApiResponse<GetBookWithCategories?>
+                var errorResponse = new ApiResponse<GetBookWithCategoriesAndDescription?>
                 {
                     WasSuccessful = false,
                     Message = $"Failed to retrieve book: {ex.Message}",
@@ -137,10 +143,9 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
                 return StatusCode(500, errorResponse);
             }
-
         }
-       
- 
+
+
         [HttpGet("page")]
         public async Task<ActionResult<ApiResponse<ICollection<GetBook>?>>> GetBooksPage(
          [FromQuery] string? title, // optional search
@@ -256,6 +261,8 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                     AuthorNames = book.AuthorNames,
                     Title = book.Title,
                     OnSale = book.OnSale,
+                    Description = book.Description,
+                    OriginalPrice = book.OriginalPrice,
                     OffPercentage = book.OffPercentage,
                     CategoryIds = book.CategoryIds,
                     ImageURL = imageUrl,
@@ -316,6 +323,8 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                     AuthorNames = addNewBook.AuthorNames,
                     Title = addNewBook.Title,
                     CategoryIds = addNewBook.CategoryIds,
+                    OriginalPrice = addNewBook.OriginalPrice,
+                    Description = addNewBook.Description,
                     ImageUrl = imageUrl,
                     Language = addNewBook.Language,
                     Quantity = addNewBook.Quantity,

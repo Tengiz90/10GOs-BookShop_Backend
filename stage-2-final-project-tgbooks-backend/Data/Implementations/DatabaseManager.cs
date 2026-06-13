@@ -95,19 +95,46 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             return foundBook.Id;
         }
 
-        public async Task<Book> GetBookByIdAsync(int id)
+        public async Task<Book> GetBookByIdAsync(int id, bool isUserViewing)
         {
-            var book = await _db.Books
-                .Include(b => b.Categories)
-                .Include(b => b.Authors)
-                .FirstOrDefaultAsync(b => b.Id == id);
-            if (book == null)
+            int maxRetries = 4;
+            int delayMilliseconds = 100;
+
+            for (int i = 0; i < maxRetries; i++)
             {
-                throw new EntityNotFoundException(nameof(Book), id);
+                try
+                {
+                    var book = await _db.Books
+                        .Include(b => b.Categories)
+                        .Include(b => b.Authors)
+                        .FirstOrDefaultAsync(b => b.Id == id);
+
+                    if (book == null)
+                        throw new EntityNotFoundException(nameof(Book), id);
+
+                    // ONLY increment the counter if it's a user viewing the book
+                    if (isUserViewing)
+                    {
+                        book.TimesClicked += 1;
+                        await _db.SaveChangesAsync();
+                    }
+
+                    return book;
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    // If it's an admin edit, isUserViewing is false, meaning SaveChangesAsync() 
+                    // isn't called here, so a concurrency exception shouldn't happen during the "Get" phase.
+                    if (i == maxRetries - 1)
+                    {
+                        throw new Exception("High traffic. Please try again.", ex);
+                    }
+
+                    await Task.Delay(delayMilliseconds);
+                }
             }
-            return book;
 
-
+            throw new Exception("Unexpected concurrency failure.");
         }
 
         public async Task<ICollection<Book>> GetBooksByCategoryIdAsync(int id)

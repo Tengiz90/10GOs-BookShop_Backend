@@ -12,7 +12,13 @@ namespace stage_2_final_project_tgbooks_backend.Data.Models
         public int Quantity { get; set; }
         public bool IsDeleted { get; set; } = false;
         public bool OnSale { get; set; } = false;
+        public string Description { get; set; } = "";
+
+        public long TimesClicked { get; set; } = 0;
+
         public int OffPercentage {  get; set; } = 0;
+
+        public decimal OriginalPrice { get; set; }
 
         public string ImageURL { get; set; }
 

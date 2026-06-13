@@ -15,7 +15,7 @@ namespace WebApplication2.Services.Interfaces
         Task<EditBookResult> EditBookAsync(EditBookDto request);
         Task<RemoveBookByIdResult> RemoveBookAsync(int id);
 
-        Task<GetBookWithCategories> GetBookByIdAsync(int id, int? userId);
+        Task<GetBookWithCategoriesAndDescription> GetBookByIdAsync(int id, int? userId, bool isUserViewing = true);
         Task<ICollection<GetBook>> GetBooksByCategoryAsync(int categoryId, int? userId);
         Task<ICollection<GetBook>> GetBooksByCategorySortedAsync(int categoryId, int? userId);
         Task<ICollection<GetBook>> GetBooksByAuthorAsync(int authorId, int? userId);

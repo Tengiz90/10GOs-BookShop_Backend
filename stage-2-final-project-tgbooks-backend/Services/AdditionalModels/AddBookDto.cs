@@ -8,6 +8,9 @@ namespace stage_2_final_project_tgbooks_backend.Services.AdditionalModels
         public List<string> AuthorNames { get; set; }
         public Language Language { get; set; }
         public int Quantity { get; set; }
+        public string Description { get; set; }
+        public decimal OriginalPrice { get; set; }
+
         public ICollection<int> CategoryIds { get; set; }
         public string ImageUrl { get; set; }
     }
