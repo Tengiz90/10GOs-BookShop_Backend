@@ -686,10 +686,26 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                 })
                 .ToDictionaryAsync(x => x.BookId, x => x);
 
+            // Extract all unique category names present across your book data to build dynamic ML columns
+            var distinctCategoryNames = books
+                .SelectMany(b => b.Categories)
+                .Select(c => c.Type)
+                .Distinct()
+                .OrderBy(t => t)
+                .ToList();
+
             var csvBuilder = new StringBuilder();
 
-            // 1. CSV Header Row - Clean alphanumeric features for Python/Pandas parsing
-            csvBuilder.AppendLine("BookId,Title,Language,OriginalPrice,OnSale,OffPercentage,CurrentPrice,StockQuantity,TimesClicked,CartCount,OrderCount,TotalUnitsSold,CategoryCount,PrimaryCategory,AuthorCount");
+            // 1. Build CSV Header Row with dynamic multi-label category features
+            var baseHeader = "BookId,Title,Language,OriginalPrice,OnSale,OffPercentage,CurrentPrice,StockQuantity,TimesClicked,CartCount,OrderCount,TotalUnitsSold,CategoryCount,AuthorCount";
+
+            foreach (var categoryName in distinctCategoryNames)
+            {
+                // Clean up column names (e.g., "Non-Fiction" or "Sci Fi" becomes "Category_Non_Fiction" or "Category_Sci_Fi")
+                string cleanColumnName = categoryName.Replace(" ", "_").Replace("-", "_");
+                baseHeader += $",Category_{cleanColumnName}";
+            }
+            csvBuilder.AppendLine(baseHeader);
 
             // 2. Populate CSV Rows
             foreach (var book in books)
@@ -714,13 +730,9 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                     ? $"\"{book.Title.Replace("\"", "\"\"")}\""
                     : book.Title;
 
-                string primaryCategory = book.Categories.FirstOrDefault()?.Type ?? "Unknown";
-                string escapedCategory = primaryCategory.Contains(",") || primaryCategory.Contains("\"")
-                    ? $"\"{primaryCategory.Replace("\"", "\"\"")}\""
-                    : primaryCategory;
-
-                // Construct comma-separated vector values
-                csvBuilder.AppendLine(
+                // Construct standard comma-separated vector values
+                var rowBuilder = new StringBuilder();
+                rowBuilder.Append(
                     $"{book.Id}," +
                     $"{escapedTitle}," +
                     $"{(int)book.Language}," + // Cast enums to integers for numerical ML processing
@@ -734,9 +746,17 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                     $"{orderCount}," +
                     $"{totalUnitsSold}," +
                     $"{book.Categories.Count}," +
-                    $"{escapedCategory}," +
                     $"{book.Authors.Count}"
                 );
+
+                // 3. Dynamically append 1 or 0 for each system category column
+                foreach (var categoryName in distinctCategoryNames)
+                {
+                    int isAssociated = book.Categories.Any(c => c.Type == categoryName) ? 1 : 0;
+                    rowBuilder.Append($",{isAssociated}");
+                }
+
+                csvBuilder.AppendLine(rowBuilder.ToString());
             }
 
             return Encoding.UTF8.GetBytes(csvBuilder.ToString());

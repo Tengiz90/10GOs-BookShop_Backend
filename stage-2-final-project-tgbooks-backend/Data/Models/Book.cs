@@ -1,6 +1,7 @@
 ﻿using stage_2_final_project_tgbooks_backend.Core;
 using stage_2_final_project_tgbooks_backend.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace stage_2_final_project_tgbooks_backend.Data.Models
 {
@@ -18,6 +19,7 @@ namespace stage_2_final_project_tgbooks_backend.Data.Models
 
         public int OffPercentage {  get; set; } = 0;
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal OriginalPrice { get; set; }
 
         public string ImageURL { get; set; }
