@@ -40,6 +40,8 @@ namespace WebApplication2.Services
                 Authors = authors,
                 Language = request.Language,
                 Quantity = request.Quantity,
+                Description = request.Description,
+                OriginalPrice = request.OriginalPrice,
                 ImageURL = request.ImageUrl,
                 Categories = _databaseManager.GetCategories()
                           .Where(c => request.CategoryIds.Contains(c.Id)).ToList()
@@ -62,6 +64,7 @@ namespace WebApplication2.Services
                 Title = request.Title.Trim(),
                 OnSale = request.OnSale,
                 OriginalPrice = request.OriginalPrice,  
+                Description = request.Description,
                 OffPercentage = request.OffPercentage,
                 Authors = authors, // Temporary list of author objects with names
                 Language = request.Language,

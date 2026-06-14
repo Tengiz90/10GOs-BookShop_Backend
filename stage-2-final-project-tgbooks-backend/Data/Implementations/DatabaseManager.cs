@@ -42,6 +42,8 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             // Update basic properties
             foundBook.Title = updatedBook.Title;
             foundBook.OnSale = updatedBook.OnSale;
+            foundBook.OriginalPrice = updatedBook.OriginalPrice;
+            foundBook.Description= updatedBook.Description; 
             foundBook.Language = updatedBook.Language;
             foundBook.OffPercentage = updatedBook.OffPercentage;
             if (updatedBook.Quantity < 0) throw new ArgumentOutOfRangeException(nameof(updatedBook.Quantity), "Book quantity can't be negative");
