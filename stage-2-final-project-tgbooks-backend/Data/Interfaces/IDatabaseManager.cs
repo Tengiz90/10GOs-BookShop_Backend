@@ -59,6 +59,9 @@ namespace stage_2_final_project_tgbooks_backend.Data.Interfaces
 
 
         public Task<byte[]> GenerateBooksMlDataCsvAsync();
+        Task<byte[]> GenerateBooksMlDataExcelFriendlyAsync();
+
+        Task<byte[]> GenerateAuthorMlDatasetAsync();
 
 
     }
