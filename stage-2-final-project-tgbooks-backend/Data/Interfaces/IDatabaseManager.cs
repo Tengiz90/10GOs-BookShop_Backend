@@ -63,6 +63,8 @@ namespace stage_2_final_project_tgbooks_backend.Data.Interfaces
 
         Task<byte[]> GenerateAuthorMlDatasetAsync();
 
+        Task<byte[]> GenerateClickMlDatasetAsync();
+
 
     }
 }

@@ -101,44 +101,31 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
 
         public async Task<Book> GetBookByIdAsync(int id, bool isUserViewing)
         {
-            int maxRetries = 4;
-            int delayMilliseconds = 100;
+            // 1. Fetch the book and its details normally
+            var book = await _db.Books
+                .Include(b => b.Categories)
+                .Include(b => b.Authors)
+                .FirstOrDefaultAsync(b => b.Id == id);
 
-            for (int i = 0; i < maxRetries; i++)
+            if (book == null)
+                throw new EntityNotFoundException(nameof(Book), id);
+
+            // 2. Track the click by adding a new row to the Clicks table
+            if (isUserViewing)
             {
-                try
+                var newClick = new Click
                 {
-                    var book = await _db.Books
-                        .Include(b => b.Categories)
-                        .Include(b => b.Authors)
-                        .FirstOrDefaultAsync(b => b.Id == id);
+                    BookId = book.Id,
+                    ClickedAt = DateTime.UtcNow
+                };
 
-                    if (book == null)
-                        throw new EntityNotFoundException(nameof(Book), id);
+                _db.Clicks.Add(newClick);
 
-                    // ONLY increment the counter if it's a user viewing the book
-                    if (isUserViewing)
-                    {
-                        book.TimesClicked += 1;
-                        await _db.SaveChangesAsync();
-                    }
-
-                    return book;
-                }
-                catch (DbUpdateConcurrencyException ex)
-                {
-                    // If it's an admin edit, isUserViewing is false, meaning SaveChangesAsync() 
-                    // isn't called here, so a concurrency exception shouldn't happen during the "Get" phase.
-                    if (i == maxRetries - 1)
-                    {
-                        throw new Exception("High traffic. Please try again.", ex);
-                    }
-
-                    await Task.Delay(delayMilliseconds);
-                }
+                // This is a pure INSERT. SQL Server handles heavy traffic seamlessly here!
+                await _db.SaveChangesAsync();
             }
 
-            throw new Exception("Unexpected concurrency failure.");
+            return book;
         }
 
         public async Task<ICollection<Book>> GetBooksByCategoryIdAsync(int id)
@@ -739,7 +726,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                            $"{book.OffPercentage}," +
                            $"{currentPrice.ToString("F2", CultureInfo.InvariantCulture)}," +
                            $"{book.Quantity}," +
-                           $"{book.TimesClicked}," +
+                           $"{book.TotalClicks}," +
                            $"{cartCount}," +
                            $"{orderCount}," +
                            $"{totalUnitsSold}," +
@@ -769,7 +756,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
         /// Alternative layout engine that converts the dataset matrix into a Tab-Separated Unicode format.
         /// OPTIMIZED FOR: Flawless double-click execution directly in Excel 2019 without code conversion.
         /// </summary>
-        public async Task<byte[]> GenerateBooksMlDataExcelFriendlyAsync()
+        public async   Task<byte[]> GenerateBooksMlDataExcelFriendlyAsync()
         {
             // Call our underlying data logic to fetch the clean CSV text string array
             byte[] rawCsvBytes = await GenerateBooksMlDataCsvAsync();
@@ -804,7 +791,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
 
                         // Aggregate popularity via total times their books were clicked
                         TotalBookClicks = author.Books.Any()
-                            ? author.Books.Sum(b => b.TimesClicked)
+                            ? author.Books.Sum(b => b.TotalClicks)
                             : 0,
 
                         // Query CartItem table via Book relationship to find how many times added to a cart
@@ -840,7 +827,66 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             return Encoding.UTF8.GetBytes(csvBuilder.ToString());
         }
 
+        public async Task<byte[]> GenerateClickMlDatasetAsync()
+        {
+            // 1. Fetch data efficiently and load the nested collections through the Book property
+            var clickData = await _db.Clicks
+                .AsNoTracking()
+                .Select(c => new
+                {
+                    ClickId = c.Id,
+                    c.BookId,
+                    BookTitle = c.Book.Title,
+                    BookLanguage = c.Book.Language.ToString(),
+                    OriginalPrice = c.Book.OriginalPrice,
+                    OffPercentage = c.Book.OffPercentage,
+                    OnSale = c.Book.OnSale,
+
+                    // Flatten the Many-to-Many lists into Excel/ML friendly text formats
+                    Authors = c.Book.Authors.Select(a => a.Name),
+                    Categories = c.Book.Categories.Select(cat => cat.Type),
+
+                    // Track timestamp breakdowns
+                    ClickHour = c.ClickedAt.Hour,
+                    ClickDayOfWeek = c.ClickedAt.DayOfWeek.ToString(),
+                    Timestamp = c.ClickedAt.ToString("yyyy-MM-dd HH:mm:ss")
+                })
+                .ToListAsync();
+
+            // 2. Stream content directly into a StringBuilder
+            var csvBuilder = new StringBuilder();
+
+            // Write Header Row (Optimized with rich features for ML target modeling)
+            csvBuilder.AppendLine("ClickId,BookId,BookTitle,Language,OriginalPrice,OffPercentage,OnSale,Authors,Categories,ClickHour,ClickDayOfWeek,Timestamp");
+
+            // Write Data Rows
+            foreach (var click in clickData)
+            {
+                // Join multiple authors/categories with a semicolon inside the quote boundaries
+                string formattedAuthors = string.Join("; ", click.Authors).Replace("\"", "\"\"");
+                string formattedCategories = string.Join("; ", click.Categories).Replace("\"", "\"\"");
+                string safeTitle = click.BookTitle.Replace("\"", "\"\"");
+
+                csvBuilder.AppendLine($"{click.ClickId}," +
+                                     $"{click.BookId}," +
+                                     $"\"{safeTitle}\"," +
+                                     $"\"{click.BookLanguage}\"," +
+                                     $"{click.OriginalPrice}," +
+                                     $"{click.OffPercentage}," +
+                                     $"{click.OnSale.ToString().ToLower()}," +
+                                     $"\"{formattedAuthors}\"," +
+                                     $"\"{formattedCategories}\"," +
+                                     $"{click.ClickHour}," +
+                                     $"{click.ClickDayOfWeek}," +
+                                     $"{click.Timestamp}");
+            }
+
+            // 3. Return as a native UTF-8 CSV Byte Array
+            return Encoding.UTF8.GetBytes(csvBuilder.ToString());
+        }
+
     }
+
 
 
 }

@@ -13,6 +13,7 @@ namespace stage_2_final_project_tgbooks_backend.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Author> Authors { get; set; }
         public DbSet<Order> Orders { get; set; }
+        public DbSet<Click> Clicks { get; set; }
         public DatabaseContext(DbContextOptions<DatabaseContext> options)
           : base(options)
         {

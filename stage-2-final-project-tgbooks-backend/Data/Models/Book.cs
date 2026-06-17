@@ -15,7 +15,9 @@ namespace stage_2_final_project_tgbooks_backend.Data.Models
         public bool OnSale { get; set; } = false;
         public string Description { get; set; } = "";
 
-        public long TimesClicked { get; set; } = 0;
+        public ICollection<Click> Clicks { get; set; } = new List<Click>();
+
+        public int TotalClicks => Clicks?.Count ?? 0;
 
         public int OffPercentage {  get; set; } = 0;
 
