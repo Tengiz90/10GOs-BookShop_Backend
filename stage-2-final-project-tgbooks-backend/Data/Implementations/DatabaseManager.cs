@@ -847,9 +847,9 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                     Categories = c.Book.Categories.Select(cat => cat.Type),
 
                     // Track timestamp breakdowns
-                    ClickHour = c.ClickedAt.Hour,
-                    ClickDayOfWeek = c.ClickedAt.DayOfWeek.ToString(),
-                    Timestamp = c.ClickedAt.ToString("yyyy-MM-dd HH:mm:ss")
+                    ClickHour = c.ClickedAt.AddHours(4).Hour,
+                    ClickDayOfWeek = c.ClickedAt.AddHours(4).DayOfWeek.ToString(),
+                    Timestamp = c.ClickedAt.AddHours(4).ToString("yyyy-MM-dd HH:mm:ss")
                 })
                 .ToListAsync();
 
