@@ -659,6 +659,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             var books = await _db.Books
                 .Include(b => b.Categories)
                 .Include(b => b.Authors)
+                .Include(b => b.Clicks) // <-- This ensures the collection isn't null
                 .AsNoTracking()
                 .ToListAsync();
 
