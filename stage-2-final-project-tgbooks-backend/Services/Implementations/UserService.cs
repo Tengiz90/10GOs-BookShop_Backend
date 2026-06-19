@@ -233,6 +233,10 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
         public async Task<ICollection<GetCartItem>> GetUserCartByUserIdAsync(int userId)
         {
             var cart = await _databaseManager.GetUserCartByUserIdAsync(userId);
+            if (cart == null || cart.Items == null)
+            {
+                return new List<GetCartItem>();
+            }
             return cart.Items.Select( item => new GetCartItem
             {
                 Id = item.Id,
