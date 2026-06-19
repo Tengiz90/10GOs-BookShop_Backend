@@ -360,13 +360,13 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
         }
 
+
         [Authorize(Roles = "Customer")]
         [HttpGet("cart")]
         public async Task<ActionResult<ApiResponse<ICollection<GetCartItem>?>>> GetAllCartItems()
         {
             try
             {
-               
                 var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
                 if (string.IsNullOrEmpty(idClaim) || !int.TryParse(idClaim, out int userId))
@@ -378,10 +378,22 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                     });
                 }
 
-               
+                // 1. Await the service response first without immediately calling .ToList()
+                var cartResult = await _userService.GetUserCartByUserIdAsync(userId);
 
-                var cart = (await _userService.GetUserCartByUserIdAsync(userId)).ToList();
-                var response = new ApiResponse<ICollection<GetCartItem>?> { WasSuccessful = true, Message = "Cart retrieved successfully", Data = cart };
+                // 2. Safely fall back to an empty list if the database record/items are uninitialized
+                ICollection<GetCartItem> finalCart = cartResult != null
+                    ? cartResult.ToList()
+                    : new List<GetCartItem>();
+
+                // 3. Return a clean 200 OK containing the empty collection to avoid breaking the frontend
+                var response = new ApiResponse<ICollection<GetCartItem>?>
+                {
+                    WasSuccessful = true,
+                    Message = "Cart retrieved successfully",
+                    Data = finalCart
+                };
+
                 return Ok(response);
             }
             catch (EntityNotFoundException ex)
@@ -395,6 +407,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
                 return StatusCode(500, errorResponse);
             }
         }
+
 
         [Authorize(Roles = "Customer")]
         [HttpPost("cart")]
