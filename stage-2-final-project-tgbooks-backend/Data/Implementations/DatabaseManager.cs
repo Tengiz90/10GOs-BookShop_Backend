@@ -391,8 +391,12 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                 // Decrement the stock
                 book.Quantity -= qtyToPurchase;
 
+                var pricePerUnit = book.OnSale
+                    ? book.OriginalPrice * (100 - book.OffPercentage) / 100
+                    : book.OriginalPrice;
 
-                var orderItem = new OrderItem { BookId = bookId, Quantity = qtyToPurchase };
+                var totalPriceAtOrderTime = qtyToPurchase * pricePerUnit;
+                var orderItem = new OrderItem { BookId = bookId, Quantity = qtyToPurchase, TotalPriceAtOrderTime = totalPriceAtOrderTime };
                 orderItems.Add(orderItem);
             }
 

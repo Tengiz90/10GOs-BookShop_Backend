@@ -12,5 +12,7 @@ namespace stage_2_final_project_tgbooks_backend.Data.Models
         public Book Book { get; set; } = null!;
 
         public int Quantity { get; set; }
+
+        public decimal TotalPriceAtOrderTime = 0;
     }
 }

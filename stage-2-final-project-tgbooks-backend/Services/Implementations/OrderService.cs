@@ -35,6 +35,7 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
                          orIt => new GetOrderItem
                          {
                              BookId = orIt.BookId,
+                             FinallPrice = orIt.TotalPriceAtOrderTime,
                              ImageURL = orIt.Book.ImageURL,
                              Language = orIt.Book.Language,
                              Quantity = orIt.Quantity,
@@ -65,6 +66,7 @@ namespace stage_2_final_project_tgbooks_backend.Services.Implementations
                       orIt => new GetOrderItem
                       {
                           BookId = orIt.BookId,
+                          FinallPrice = orIt.TotalPriceAtOrderTime,
                           ImageURL = orIt.Book.ImageURL,
                           Language = orIt.Book.Language,
                           Quantity = orIt.Quantity,
