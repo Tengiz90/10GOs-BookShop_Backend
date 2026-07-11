@@ -56,7 +56,7 @@ namespace stage_2_final_project_tgbooks_backend
                     // Safely extract the client's remote IP address
                     var remoteIpAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
 
-                    // Apply a fixed window limit: 20 requests every 50 minute per unique IP
+                    // Apply a fixed window limit: 20 requests every 60 minute per unique IP
                     return RateLimitPartition.GetFixedWindowLimiter(
                         partitionKey: remoteIpAddress,
                         factory: _ => new FixedWindowRateLimiterOptions
