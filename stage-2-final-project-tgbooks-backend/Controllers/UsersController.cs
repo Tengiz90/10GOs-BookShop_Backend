@@ -136,7 +136,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
 
 
         [Authorize]
-        [EnableRateLimiting("StrictIpValidation")]
+        [EnableRateLimiting("EmailConfirmationPolicy")]
         [HttpPost("confirm-email")]
         public async Task<ActionResult<ApiResponse<ConfirmEmailResult?>>> VerifyEmail(ConfirmEmail confirmEmail)
         {
@@ -173,7 +173,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
         }
 
         [HttpPost("sign-in")]
-        [EnableRateLimiting("StrictIpValidation")]
+        [EnableRateLimiting("LoginPolicy")]
         public async Task<ActionResult<ApiResponse<GetUserByEmailAndPasswordResult?>>> SignIn(SignInUser signInUser)
         {
             var validationResult = await _signInUserValidator.ValidateAsync(signInUser);

@@ -50,20 +50,40 @@ namespace stage_2_final_project_tgbooks_backend
                 // Return HTTP 429 Too Many Requests when a client is blocked
                 options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-                // Define a custom policy named "StrictIpValidation"
-                options.AddPolicy("StrictIpValidation", httpContext =>
+                //  LOGIN POLICY: Accommodates shared public networks (offices, schools)
+                options.AddPolicy("LoginPolicy", httpContext =>
                 {
-                    // Safely extract the client's remote IP address
-                    var remoteIpAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
+                    var remoteIpAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
-                    // Apply a fixed window limit: 20 requests every 60 minute per unique IP
                     return RateLimitPartition.GetFixedWindowLimiter(
                         partitionKey: remoteIpAddress,
                         factory: _ => new FixedWindowRateLimiterOptions
                         {
-                            PermitLimit = 20,                  // Allow maximum 20 requests
-                            Window = TimeSpan.FromMinutes(60), // Inside a 1-hour window
-                            QueueLimit = 0                    // Drop extra requests instantly instead of queuing them
+                            PermitLimit = 30,                  
+                            Window = TimeSpan.FromMinutes(10),  
+                            QueueLimit = 0
+                        });
+                });
+
+                // EMAIL CONFIRMATION POLICY
+                options.AddPolicy("EmailConfirmationPolicy", httpContext =>
+                {
+                    // Try to extract the unique Database User ID from the JWT claims
+                    var userId = httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                    // Build the partition key using the hierarchy: User ID -> Remote IP -> "unknown"
+                    var partitionKey = userId
+                                       ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                                       ?? "unknown";
+
+                    // Apply the fixed window rate limiter
+                    return RateLimitPartition.GetFixedWindowLimiter(
+                        partitionKey: partitionKey,
+                        factory: _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 10,                   // Allow maximum 10 requests
+                            Window = TimeSpan.FromMinutes(60),  // Inside a 1-hour window
+                            QueueLimit = 0                      // Drop extra requests instantly
                         });
                 });
             });
