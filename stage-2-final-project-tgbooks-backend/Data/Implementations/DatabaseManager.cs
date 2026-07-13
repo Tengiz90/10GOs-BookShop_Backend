@@ -775,50 +775,66 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
             return Encoding.Unicode.GetBytes(tabDelimitedContent);
         }
 
-
         public async Task<byte[]> GenerateAuthorMlDatasetAsync()
         {
             var csvBuilder = new StringBuilder();
 
-            // 1. Write the tabular matrix headers based on your models
+            // Write the CSV tabular matrix headers
             csvBuilder.AppendLine("AuthorId,TotalBooksCount,TotalBookClicks,TotalAddedToCart,TotalOrderedCount");
 
             try
             {
-                // 2. Query and aggregate metrics navigating through your model navigation collections
-                var authorsMetrics = await _db.Authors
+                // Pull down the raw author records and project book entities directly into memory
+                var rawAuthorsData = await _db.Authors
                     .Select(author => new
                     {
                         AuthorId = author.Id,
-
-                        // Count of books tied to this author
                         TotalBooksCount = author.Books.Count,
-
-                        // Aggregate popularity via total times their books were clicked
-                        TotalBookClicks = author.Books.Any()
-                            ? author.Books.Sum(b => b.TotalClicks)
-                            : 0,
-
-                        // Query CartItem table via Book relationship to find how many times added to a cart
-                        TotalAddedToCart = _db.Set<Data.Models.CartItem>()
-                            .Where(ci => author.Books.Select(b => b.Id).Contains(ci.BookId))
-                            .Sum(ci => (int?)ci.Quantity) ?? 0,
-
-                        // Query OrderItem table via Book relationship to find total verified completed sales
-                        TotalOrderedCount = _db.Set<Data.Models.OrderItem>()
-                            .Where(oi => author.Books.Select(b => b.Id).Contains(oi.BookId))
-                            .Sum(oi => (int?)oi.Quantity) ?? 0
+                        // Select the whole book object or just the clicks property to pull data from DB before summing
+                        BooksData = author.Books.Select(b => new { b.Id, b.TotalClicks }).ToList()
                     })
                     .ToListAsync();
 
-                // 3. Build the CSV lines string rows
-                foreach (var metric in authorsMetrics)
+                // Calculate book clicks safely in-memory since TotalClicks is an unmapped property in the DB
+                var processedAuthors = rawAuthorsData.Select(author => new
                 {
-                    string line = $"{metric.AuthorId}," +
-                                 $"{metric.TotalBooksCount}," +
-                                 $"{metric.TotalBookClicks}," +
-                                 $"{metric.TotalAddedToCart}," +
-                                 $"{metric.TotalOrderedCount}";
+                    author.AuthorId,
+                    author.TotalBooksCount,
+                    TotalBookClicks = author.BooksData.Sum(b => b.TotalClicks),
+                    BookIds = author.BooksData.Select(b => b.Id).ToList()
+                }).ToList();
+
+                // Flatten all compiled book IDs into a unique list to execute optimized batch lookups
+                var allAuthorBookIds = processedAuthors.SelectMany(a => a.BookIds).Distinct().ToList();
+
+                // Batch query CartItems into a fast memory dictionary lookup matching the targeted books
+                var cartMetricsLookup = await _db.Set<Data.Models.CartItem>()
+                    .Where(ci => allAuthorBookIds.Contains(ci.BookId))
+                    .GroupBy(ci => ci.BookId)
+                    .Select(g => new { BookId = g.Key, Quantity = g.Sum(ci => ci.Quantity) })
+                    .ToDictionaryAsync(x => x.BookId, x => x.Quantity);
+
+                // Batch query OrderItems into a fast memory dictionary lookup matching the verified sales
+                var orderMetricsLookup = await _db.Set<Data.Models.OrderItem>()
+                    .Where(oi => allAuthorBookIds.Contains(oi.BookId))
+                    .GroupBy(oi => oi.BookId)
+                    .Select(g => new { BookId = g.Key, Quantity = g.Sum(oi => oi.Quantity) })
+                    .ToDictionaryAsync(x => x.BookId, x => x.Quantity);
+
+                // Iterate through the processed collection and compile the CSV rows in memory
+                foreach (var author in processedAuthors)
+                {
+                    int totalAddedToCart = author.BookIds
+                        .Sum(bId => cartMetricsLookup.ContainsKey(bId) ? cartMetricsLookup[bId] : 0);
+
+                    int totalOrderedCount = author.BookIds
+                        .Sum(bId => orderMetricsLookup.ContainsKey(bId) ? orderMetricsLookup[bId] : 0);
+
+                    string line = $"{author.AuthorId}," +
+                                 $"{author.TotalBooksCount}," +
+                                 $"{author.TotalBookClicks}," +
+                                 $"{totalAddedToCart}," +
+                                 $"{totalOrderedCount}";
 
                     csvBuilder.AppendLine(line);
                 }
@@ -828,7 +844,7 @@ namespace stage_2_final_project_tgbooks_backend.DaEditBookByIdEditBookByIdAsynct
                 throw new InvalidOperationException("Failed compiling dataset matrix due to internal contextual querying faults.", ex);
             }
 
-            // 4. Return as raw UTF-8 byte stream matching your service pipeline mechanics
+            // Convert the compiled CSV string builder data to a raw UTF-8 byte stream
             return Encoding.UTF8.GetBytes(csvBuilder.ToString());
         }
 
