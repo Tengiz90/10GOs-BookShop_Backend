@@ -23,7 +23,7 @@ namespace stage_2_final_project_tgbooks_backend.Controllers
             _clickAnalyticsService = clickAnalyticsService;
         }
 
-        [HttpGet("export-ml-data")]
+        [HttpGet("export-books-ml-data")]
         public async Task<IActionResult> ExportMlData()
         {
             try
